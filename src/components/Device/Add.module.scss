@@ -1,0 +1,31 @@
+.layout {
+    padding-top:18px;
+    padding-bottom:18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #F8F8FE;
+    font-family:"Lucida Calligraphy", cursive, serif, sans-serif;
+}
+.Li{
+    padding: 0px 0px;
+    outline: none;
+    max-width: 720px;
+    color: #000;
+    margin-right: 10px;
+    font-size:18px;
+    &:hover {
+        color: #0DADEA;
+    }
+}
+
+.upload-demo-trigger {
+    background-color: var(--color-fill-2);
+    color: var(--color-text-1);
+    border: 1px dashed var(--color-fill-4);
+    height: 158px;
+    width: 380px;
+    border-radius: 2;
+    line-height: 158px;
+    text-align: center;
+  }

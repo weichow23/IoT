@@ -1,0 +1,19 @@
+.layout {
+    padding-top:18px;
+    padding-bottom:18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #F8F8FE;
+    font-family:"Lucida Calligraphy", cursive, serif, sans-serif;
+}
+.LogoUl {
+    margin: 20px 50px 20px 5%;
+    display: none;
+    @media (max-width: 768px) {
+        display: flex;
+        width: 160px;
+        height: 70px;
+        object-fit: contain;
+    }
+}
