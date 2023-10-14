@@ -25,7 +25,7 @@ export const Login = () => {
         const { email, password } = values;
         const encryptedPassword = hashPassword(password);
 
-        axios.post('/api/login', { email, password: encryptedPassword })
+        axios.post(' http://localhost:5000/login', { email:email, password: encryptedPassword })
           .then((response) => {
             if(response.data.code === 0) {
               alert("登录成功");
@@ -53,7 +53,7 @@ export const Login = () => {
         const { username, registerEmail, registerPassword } = values;
         const encryptedPassword = hashPassword(registerPassword);
 
-        axios.post('/api/register', {
+        axios.post('http://localhost:5000/register', {
           email: registerEmail,
           password: encryptedPassword,
           name: username,
