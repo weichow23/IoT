@@ -63,7 +63,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
           />
         </Col>
         <Col span={6}>
-          <Button type="dashed" style={{ marginLeft: '10px' }} onClick={handleNicknameSubmit}>Submit</Button>
+          <Button type="dashed" style={{ marginLeft: '10px' }} onClick={handleNicknameSubmit}>修改</Button>
         </Col>
         <Col span={6} />
       </Row>
@@ -91,7 +91,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
           />
         </Col>
         <Col span={6}>
-          <Button type="dashed" style={{ marginLeft: '10px' }} onClick={handlePasswordSubmit}>Submit</Button>
+          <Button type="dashed" style={{ marginLeft: '10px' }} onClick={handlePasswordSubmit}>修改</Button>
         </Col>
         <Col span={6} />
       </Row>

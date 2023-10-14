@@ -8,7 +8,7 @@ import logo_root from '@/assets/root.svg';
 import axios from 'axios';
 import { md5 } from 'js-md5';
 
-export const Login = () => {
+export const Login =  ({ onLoginSuccess }) => {
   const [form] = Form.useForm();
   const [tabKey, setTabKey] = useState('login');
 
@@ -17,19 +17,15 @@ export const Login = () => {
       const values = await form.validateFields();
       console.log('Form values:', values);
 
-      const hashPassword = (password) => {
-        return md5(password);
-      };
-
       if (tabKey === 'login') {
         const { email, password } = values;
-        const encryptedPassword = hashPassword(password);
+        const encryptedPassword = md5(password);
 
         axios.post(' http://localhost:5000/login', { email:email, password: encryptedPassword })
           .then((response) => {
             if(response.data.code === 0) {
               alert("登录成功");
-              // TODO: Save login info somewhere and redirect user
+              onLoginSuccess();
             } else {
               alert("登录失败");
             }
@@ -51,7 +47,7 @@ export const Login = () => {
       }
       else if (tabKey === 'register') {
         const { username, registerEmail, registerPassword } = values;
-        const encryptedPassword = hashPassword(registerPassword);
+        const encryptedPassword = md5(registerPassword);
 
         axios.post('http://localhost:5000/register', {
           email: registerEmail,

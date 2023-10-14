@@ -26,6 +26,8 @@ type Props = {
 
 function RightNav(props: Props) {
   const [showUser, setShowUser] = useState(true);//是否显示登录页面
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   return (
     <Router>
       <Ul open={props.open}>
@@ -83,13 +85,13 @@ function RightNav(props: Props) {
         </Route>        
 
         <Route exact path='/Device'>
-          <Device />
+          {isAuthenticated ? <Device /> : <Login onLoginSuccess={() => setIsAuthenticated(true)} />}
         </Route>
         <Route exact path='/QA'>
           <QA />
         </Route>
         <Route exact path='/User'>
-          {showUser ? <User /> : <Login />}
+          {isAuthenticated ? <User onLogout={() => setIsAuthenticated(false)} /> : <Login onLoginSuccess={() => setIsAuthenticated(true)} />}
         </Route>
         <Redirect to='/' />
       </Switch>
