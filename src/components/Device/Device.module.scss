@@ -4,3 +4,12 @@
     flex-direction: column;
     align-items: center;
 }
+.tableNoMargin {
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+}
+.login-button {
+  display: block;  // 定义按钮为块级元素以便整行显示
+  margin: 50px auto 0;  // 上边距20px，水平居中
+}

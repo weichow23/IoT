@@ -11,6 +11,7 @@ import { User } from '@/components/User/User'
 import { QA } from '@/components/Main/QA'
 import { Login } from '@/components/Login/Login'
 import React, { useState } from 'react';
+import { UserProvider } from '@/components/User/UserState'
 
 import {
   BrowserRouter as Router,
@@ -29,6 +30,7 @@ function RightNav(props: Props) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   return (
+      <UserProvider>
     <Router>
       <Ul open={props.open}>
       {/* <div className={styles['LogoUl']}><img src='og.png'/></div> */}
@@ -96,6 +98,7 @@ function RightNav(props: Props) {
         <Redirect to='/' />
       </Switch>
     </Router>
+      </UserProvider>
   )
 }
 

@@ -7,12 +7,14 @@ import logo from '@/assets/react.svg';
 import logo_root from '@/assets/root.svg';
 import axios from 'axios';
 import { md5 } from 'js-md5';
+import { useUser } from '@/components/User/UserState'
 
 export const Login =  ({ onLoginSuccess }) => {
   const [form] = Form.useForm();
   const [tabKey, setTabKey] = useState('login');
-
+  const { dispatch } = useUser();
   const handleSubmit = async () => {
+    console.log('Current tabKey:', tabKey);
     try {
       const values = await form.validateFields();
       console.log('Form values:', values);
@@ -21,13 +23,17 @@ export const Login =  ({ onLoginSuccess }) => {
         const { email, password } = values;
         const encryptedPassword = md5(password);
 
-        axios.post(' http://localhost:5000/login', { email:email, password: encryptedPassword })
+        axios.post('http://localhost:5000/login', { email:email, password: encryptedPassword })
           .then((response) => {
             if(response.data.code === 0) {
-              alert("登录成功");
+              // 更新 context 中的用户数据
+              dispatch({ type: 'setEmail', payload: response.data.email });
+              dispatch({ type: 'setToken', payload: response.data.data });
+              console.log('Email:', response.data.email);
+              console.log('Token:', response.data.data);
               onLoginSuccess();
             } else {
-              alert("登录失败");
+              alert("登录失败！请重新登录");
             }
           }).catch((error) => {
             if (error.response) {
@@ -48,14 +54,21 @@ export const Login =  ({ onLoginSuccess }) => {
       else if (tabKey === 'register') {
         const { username, registerEmail, registerPassword } = values;
         const encryptedPassword = md5(registerPassword);
-
         axios.post('http://localhost:5000/register', {
           email: registerEmail,
           password: encryptedPassword,
           name: username,
-        }).then((response) => {
-          alert(response.data.msg);
-        }).catch((error) => {
+        })
+        .then((response) => {
+          alert(response.data.msg); // Alert the message from server
+          console.log(response.data)
+          if (response.data.code === 0) {
+            // Here, in case of successful registration (assuming code: 0 is success),
+            // you may want to do something, e.g., reload the page
+            location.reload();
+          }
+        })
+        .catch((error) => {
           console.log(error);
           alert("请求失败");
         });
