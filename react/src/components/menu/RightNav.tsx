@@ -29,6 +29,13 @@ function RightNav(props: Props) {
   const [showUser, setShowUser] = useState(true);//是否显示登录页面
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  React.useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        setIsAuthenticated(true);
+      }
+    }, []);
+
   return (
       <UserProvider>
     <Router>

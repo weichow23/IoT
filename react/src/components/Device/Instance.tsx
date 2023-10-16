@@ -1,9 +1,49 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Form, Input, Table, Divider, message, Tooltip } from 'antd';
 import styles from './Device.module.scss';
 import axios from 'axios';
 import { useUser } from '@/components/User/UserState';
+import { Button, Form, Modal, Input, Table, Tooltip, message, Typography, Popconfirm } from 'antd';
+
+const EditableCell = ({
+  editing,
+  dataIndex,
+  title,
+  inputType,
+  record,
+  index,
+  children,
+  ...restProps
+}) => {
+  const inputNode = <Input />;
+
+  // 禁止编辑以下列
+  if(["id", "create_time", "operation", "delete"].includes(dataIndex)) {
+    return <td {...restProps}>{children}</td>;
+  }
+
+  return (
+    <td {...restProps}>
+      {editing ? (
+        <Form.Item
+          name={dataIndex}
+          style={{ margin: 0 }}
+          rules={[
+            {
+              required: true,
+              message: `请输入${title}!`,
+            },
+          ]}
+        >
+          {inputNode}
+        </Form.Item>
+      ) : (
+        children
+      )}
+    </td>
+  );
+};
+
 export const Instance = () => {
   // States
   const [visibleCreate, setVisibleCreate] = useState(false);
@@ -17,8 +57,35 @@ export const Instance = () => {
     time: '',
     oldName: '',
   });
-  const { state } = useUser()
-  const { dispatch } = useUser();
+  const { state, dispatch } = useUser();
+
+  const [editingId, setEditingId] = useState(""); // 新增state来跟踪正在编辑的行的id
+
+  const [initialFormValues, setInitialFormValues] = useState({});
+  const [form] = Form.useForm();
+  const isEditing = (record) => record.id === editingId;  // 判断当前记录是否在编辑
+
+  const edit = (record) => {
+      form.setFieldsValue({
+        ...record
+      });
+      setEditingId(record.id);
+  };
+
+  const cancel = () => {
+    setEditingId('');
+  };
+
+  const save = async (id) => {
+    try {
+      const row = await form.validateFields(); // 获取当前行的值
+      // 这里应当处理row的数据，比如将它发送到服务器。我们可以直接传递给handleAlterSubmit
+      handleAlterSubmit(row, id);
+    } catch (err) {
+      console.log('Validate Failed:', err);
+    }
+  };
+
   // Methods
   const getDevice = async () => {
     try {
@@ -52,20 +119,8 @@ export const Instance = () => {
     }
   }
   const showCreateModal = () => setVisibleCreate(true);
-  const showAlterModal = (record) => {
-    setAlterData({
-      id: record.id,
-      name: record.name,
-      code: record.code,
-      description: record.description,
-      time: record.create_time,
-      oldName: record.name,
-    });
-    setVisibleAlter(true);
-  };
   const handleCreateSubmit = async (values) => {
     try {
-      // ... 发送 POST 请求到服务器来创建一个新的设备
       const response = await axios.post('http://localhost:5000/createDevice', {
         token: state.token,
         name: values.name,
@@ -73,9 +128,7 @@ export const Instance = () => {
         description: values.description,
         user: state.username,
       });
-      // 检查响应并处理它
       if(response.data.code === 0) {
-        message.success('设备添加成功！');
         getDevice();
         setVisibleCreate(false);
       } else {
@@ -86,7 +139,7 @@ export const Instance = () => {
       message.error('添加设备失败，请检查网络连接。');
     }
   };
-  const handleAlterSubmit = async () => {
+  const handleAlterSubmit = async (row, id) => {
     try {
       const response = await axios.post('http://localhost:5000/alterDevice', {
         id: alterData.id,
@@ -96,8 +149,12 @@ export const Instance = () => {
         oldName: alterData.oldName,
         description: alterData.description,
       });
-      alert(response.data.msg);
-      getDevice();  // 重新获取设备列表
+      if(response.data.code === 0) {
+          getDevice();  // 重新获取设备列表
+          setVisibleAlter(false);  // 关闭修改的模态框
+        } else {
+          message.error('设备修改失败: ' + response.data.msg);
+        }
     } catch (err) {
       console.error(err);
     }
@@ -131,12 +188,12 @@ export const Instance = () => {
       },
     });
   };
-  // Fetch data on component mount
+
   useEffect(() => {
     getDevice();
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchUserData = async () => {
         try {
             const response = await axios.get('http://localhost:5000/getUser', {
@@ -145,7 +202,6 @@ useEffect(() => {
                 }
             });
             if (response.data.code === 0) {
-                console.log('nickname:', response.data.data);
                 dispatch({ type: 'setUsername', payload: response.data.data });
             } else {
                 message.error("获取用户信息失败，请重新登录！");
@@ -189,70 +245,91 @@ useEffect(() => {
         dataIndex: "create_time",
         width: "20%",
       },
-    {
-      title: '选项',
-      dataIndex: 'option',
-      render: (text, record) => (
-        <>
-          <a onClick={() => deleteDevice(record.name)}>删 除 </a>
-          <Divider type="vertical" />
-          <a onClick={() => showAlterModal(record)}>更 改</a>
-        </>
-      ),
-    },
-  ];
-
+      {
+        title: '修改',
+        dataIndex: 'operation',
+        render: (text, record) => {
+          const editable = isEditing(record);
+          return editable ? (
+            <span>
+              <Typography.Link onClick={() => save(record.id)} style={{ marginRight: 8 }}>
+                保存
+              </Typography.Link>
+              <Popconfirm title="确定取消?" onConfirm={cancel}>
+                <a>取消</a>
+              </Popconfirm>
+            </span>
+          ) : (
+            <Typography.Link disabled={editingId !== ''} onClick={() => edit(record)}>
+              编辑
+            </Typography.Link>
+          );
+        },
+      },
+      {
+        title: '删除',
+        dataIndex: 'delete',
+        render: (text, record) => (
+          <Popconfirm title="确定删除?" onConfirm={() => deleteDevice(record.name)}>
+            <a>删除</a>
+          </Popconfirm>
+        ),
+      },
+    ];
+  const mergedColumns = columns.map((col) => {
+    return {
+      ...col,
+      onCell: (record) => ({
+          record,
+          dataIndex: col.dataIndex,
+          title: col.title,
+          editing: col.dataIndex !== 'option' && isEditing(record),
+        }), //这个不能删，删了就没法改了
+    };
+  });
   return (
     <div className={styles.layout}>
       <Modal
-        visible={visibleCreate}
-        title="新建设备"
-        footer={null}
-        onCancel={() => setVisibleCreate(false)}
-      >
-        <Form labelCol={{ span: 5 }} wrapperCol={{ span: 12 }} onFinish={handleCreateSubmit}>
-          <Form.Item label="设备名称" name="name" rules={[{ required: true, message: '请输入设备名称!' }]}>
-            <Input value={alterData.name} onChange={(e) => setAlterData({...alterData, name: e.target.value})} />
-          </Form.Item>
-          <Form.Item label="数据流" name="code" rules={[{ required: true, message: '请输入数据流!' }]}>
-            <Input value={alterData.code} onChange={(e) => setAlterData({...alterData, code: e.target.value})} />
-          </Form.Item>
-          <Form.Item label="描述" name="description">
-            <Input value={alterData.description} onChange={(e) => setAlterData({...alterData, description: e.target.value})} />
-          </Form.Item>
-          <Form.Item wrapperCol={{ span: 12, offset: 5 }}>
-            <Button type="primary" htmlType="submit">
-              确认
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+            visible={visibleCreate}
+            title="新建设备"
+            footer={null}
+            onCancel={() => setVisibleCreate(false)}
+        >
+            <Form labelCol={{ span: 5 }} wrapperCol={{ span: 12 }} onFinish={handleCreateSubmit}>
+                <Form.Item label="设备名称" name="name" rules={[{ required: true, message: '请输入设备名称!' }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item label="数据流" name="code" rules={[{ required: true, message: '请输入数据流!' }]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item label="描述" name="description">
+                    <Input />
+                </Form.Item>
+                <Form.Item wrapperCol={{ span: 12, offset: 5 }}>
+                    <Button type="primary" htmlType="submit">
+                        确认
+                    </Button>
+                </Form.Item>
+            </Form>
+        </Modal>
 
-      <Modal
-        visible={visibleAlter}
-        title="更改设备信息"
-        footer={null}
-        onCancel={() => setVisibleAlter(false)}
-      >
-        <Form labelCol={{ span: 5 }} wrapperCol={{ span: 12 }} onFinish={handleAlterSubmit}>
-            <Form.Item label="设备名称" name="name" initialValue={alterData.name} rules={[{ required: true, message: '请输入设备名称!' }]}>
-                <Input />
-            </Form.Item>
-            <Form.Item label="数据流" name="code" initialValue={alterData.code} rules={[{ required: true, message: '请输入数据流!' }]}>
-                <Input />
-            </Form.Item>
-            <Form.Item label="描述" name="description" initialValue={alterData.description}>
-                <Input />
-            </Form.Item>
-            <Form.Item wrapperCol={{ span: 12, offset: 5 }}>
-                <Button type="primary" htmlType="submit">
-                    确认
-                </Button>
-            </Form.Item>
-        </Form>
-      </Modal>
-
-      <Table columns={columns} dataSource={deviceList} className={styles.tableNoMargin}/>
+       <Form form={form} component={false} initialValues={initialFormValues}>
+        <Table
+          components={{
+            body: {
+              cell: EditableCell,
+            },
+          }}
+          bordered
+          dataSource={deviceList}
+          columns={mergedColumns}
+          rowClassName="editable-row"
+          rowKey="id"  // 确保有一个唯一的rowKey
+          pagination={{
+            onChange: cancel,
+          }}
+        />
+      </Form>
       <Button size="large"
               type="primary"
               onClick={showCreateModal}

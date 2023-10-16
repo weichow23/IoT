@@ -16,7 +16,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
   const { state } = useUser(); //全局变量 email和token
   const { dispatch } = useUser();
 
-  const [nickname, setNickname] = useState<string>('User0001');
+  const [nickname, setNickname] = useState<string>('Anonymous');
   const [password1, setPassword1] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const nicknameInputRef = useRef<any>(null);

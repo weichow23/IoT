@@ -13,6 +13,15 @@ export const Login =  ({ onLoginSuccess }) => {
   const [form] = Form.useForm();
   const [tabKey, setTabKey] = useState('login');
   const { dispatch } = useUser();
+
+  // 当组件挂载时，检查 localStorage 中是否有 token; 该部分检查在RightNav.tsx中也有
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch({ type: 'setToken', payload: token });
+    }
+  }, [dispatch]);
+
   const handleSubmit = async () => {
     console.log('Current tabKey:', tabKey);
     try {
@@ -32,6 +41,12 @@ export const Login =  ({ onLoginSuccess }) => {
               console.log('Email:', email);
               console.log('Token:', response.data.data);
               onLoginSuccess();
+
+              // 将 token 保存到 localStorage 并在 30 分钟后自动删除
+              localStorage.setItem('token', response.data.data);
+              setTimeout(() => {
+                localStorage.removeItem('token');
+              }, 30 * 60 * 1000); // 30 minutes
             } else {
               alert("登录失败！请重新登录");
             }
