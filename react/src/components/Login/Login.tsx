@@ -29,7 +29,7 @@ export const Login =  ({ onLoginSuccess }) => {
               // 更新 context 中的用户数据
               dispatch({ type: 'setEmail', payload: response.data.email });
               dispatch({ type: 'setToken', payload: response.data.data });
-              console.log('Email:', response.data.email);
+              console.log('Email:', email);
               console.log('Token:', response.data.data);
               onLoginSuccess();
             } else {

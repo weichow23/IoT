@@ -9,9 +9,6 @@ export const Instance = () => {
   const [visibleCreate, setVisibleCreate] = useState(false);
   const [visibleAlter, setVisibleAlter] = useState(false);
   const [deviceList, setDeviceList] = useState([]);
-  const [createName, setCreateName] = useState('');
-  const [createCode, setCreateCode] = useState('');
-  const [createDescription, setCreateDescription] = useState('');
   const [alterData, setAlterData] = useState({
     id: 0,
     name: '',
@@ -21,6 +18,7 @@ export const Instance = () => {
     oldName: '',
   });
   const { state } = useUser()
+  const { dispatch } = useUser();
   // Methods
   const getDevice = async () => {
     try {
@@ -73,7 +71,7 @@ export const Instance = () => {
         name: values.name,
         code: values.code,
         description: values.description,
-        user: state.email,  //TODO:这个地方有问题
+        user: state.username,
       });
       // 检查响应并处理它
       if(response.data.code === 0) {
@@ -137,6 +135,27 @@ export const Instance = () => {
   useEffect(() => {
     getDevice();
   }, []);
+
+useEffect(() => {
+    const fetchUserData = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/getUser', {
+                params: {
+                    token: state.token,
+                }
+            });
+            if (response.data.code === 0) {
+                console.log('nickname:', response.data.data);
+                dispatch({ type: 'setUsername', payload: response.data.data });
+            } else {
+                message.error("获取用户信息失败，请重新登录！");
+            }
+        } catch (error) {
+            console.error('There was a problem with the axios operation:', error);
+        }
+    };
+    fetchUserData();
+  }, [state.token]);
 
   // Table configuration
   const columns = [
@@ -237,7 +256,7 @@ export const Instance = () => {
       <Button size="large"
               type="primary"
               onClick={showCreateModal}
-              className={styles['login-button']} // 使用定义的样式
+              className={styles['login-button']}
               style={{ width: '120px'}}>
         添加设备
       </Button>

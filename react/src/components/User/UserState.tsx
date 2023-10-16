@@ -2,6 +2,7 @@
 import React, {createContext, Dispatch, useReducer, useContext, ReactNode, Reducer } from 'react'
 
 interface UserState {
+  username: string | null
   email: string | null
   token: string | null
 }
@@ -12,6 +13,7 @@ interface UserAction {
 }
 
 const defaultState: UserState = {
+  username: null,
   email: null,
   token: null,
 }
@@ -30,6 +32,8 @@ const reducer = (state, action) => {
       return { ...state, email: action.payload }
     case 'setToken':
       return { ...state, token: action.payload }
+    case 'setUsername':
+      return { ...state, username: action.payload }
     default:
       return state
   }
@@ -38,6 +42,7 @@ const reducer = (state, action) => {
 // 创建一个provider组件
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const initialState = {
+    username: null,
     email: null,
     token: null,
   }

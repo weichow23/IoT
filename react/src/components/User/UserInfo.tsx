@@ -5,28 +5,60 @@ import { Input as AntdInput } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import styles from './User.module.scss';
 import ReactIcon from '@/assets/react.svg';
-
+import { useUser } from '@/components/User/UserState';
+import axios from 'axios';
+import { md5 } from 'js-md5';
 interface UserProps {
   // Define any props here
 }
 
 export const UserInfo: React.FC<UserProps> = ({ }) => {
+  const { state } = useUser(); //全局变量 email和token
+  const { dispatch } = useUser();
+
   const [nickname, setNickname] = useState<string>('User0001');
-  const [email, setEmail] = useState<string>('');
   const [password1, setPassword1] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const nicknameInputRef = useRef<any>(null);
 
-
   useEffect(() => {
-    // Fetch user data here, for example:
-    // fetch('/api/getUser').then((response) => response.json()).then((data) => setNickname(data.data));
-    // Set email from a global state or another API call
-  }, []);
+    const fetchUserData = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/getUser', {
+                params: {
+                    token: state.token,
+                }
+            });
+            if (response.data.code === 0) {
+                console.log('nickname:', response.data.data);
+                setNickname(response.data.data);
+                dispatch({ type: 'setUsername', payload: response.data.data });
+            } else {
+                message.error("获取用户信息失败，请重新登录！");
+            }
+        } catch (error) {
+            console.error('There was a problem with the axios operation:', error);
+        }
+    };
+    fetchUserData();
+  }, [state.token]);
 
   const handleNicknameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // API call to update nickname here
+    try {
+      const response = await axios.post('http://localhost:5000/alterName', {
+        newName: nickname,
+        token: state.token,
+      });
+
+      if (response.data.code === 0) {
+        message.success(response.data.msg);
+      } else {
+        message.error("修改失败");
+      }
+    } catch (error) {
+      message.error("修改失败");
+    }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -34,11 +66,27 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
     const reg = /^[0-9a-zA-Z]+$/;
 
     if (!reg.test(password2)) {
-      message.error("Password can only contain numbers and letters.");
+      message.error("密码只能由数字和字母组成");
       return;
     }
 
-    // API call to update password here
+    try {
+      const response = await axios.post('http://localhost:5000/alterPassword', {
+        oldPsw: md5(password1), // 使用MD5哈希
+        newPsw: md5(password2), // 使用MD5哈希
+        token: state.token,
+      });
+
+      if (response.data.code === 0) {
+        message.success("修改成功");
+      } else if (response.data.code === -2) {
+        message.error("旧密码错误");
+      } else {
+        message.error("修改失败");
+      }
+    } catch (error) {
+      message.error("修改失败");
+    }
   };
 
   return (
@@ -46,7 +94,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
       <Card hoverable style={{ width: '100%' }} bordered={false}>
         <Card.Meta
           title={nickname}
-          description={email}
+          description={'工作单位：浙江大学'} // 使用全局变量 state.email
           avatar={<Avatar src={ReactIcon} size={64} />}
         />
       </Card>
