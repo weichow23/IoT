@@ -78,8 +78,9 @@ export const Instance = () => {
 
   const save = async (id) => {
     try {
-      const row = await form.validateFields(); // 获取当前行的值
-      // 这里应当处理row的数据，比如将它发送到服务器。我们可以直接传递给handleAlterSubmit
+      const row = await form.validateFields();
+      const currentDevice = deviceList.find(device => device.id === id); // 根据id找到当前设备
+      row.oldName = currentDevice.name;
       handleAlterSubmit(row, id);
     } catch (err) {
       console.log('Validate Failed:', err);
@@ -140,23 +141,26 @@ export const Instance = () => {
     }
   };
   const handleAlterSubmit = async (row, id) => {
+      console.log(id, row, alterData);
     try {
       const response = await axios.post('http://localhost:5000/alterDevice', {
-        id: alterData.id,
+        id: id,
         token: state.token,
-        code: alterData.code,
-        newName: alterData.name,
-        oldName: alterData.oldName,
-        description: alterData.description,
+        code: row.code,
+        newName: row.name,
+        oldName: row.oldName,
+        description: row.description,
       });
       if(response.data.code === 0) {
           getDevice();  // 重新获取设备列表
           setVisibleAlter(false);  // 关闭修改的模态框
+          setEditingId(''); // 退出编辑状态
         } else {
           message.error('设备修改失败: ' + response.data.msg);
         }
     } catch (err) {
       console.error(err);
+      message.error('修改设备失败，请检查网络连接。');
     }
   };
   const deleteDevice = async (deviceName: string) => {

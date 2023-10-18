@@ -6,6 +6,14 @@ import { Typography,Card,Image,Space, Button} from 'antd';
 const { Title,Paragraph } = Typography;
 
 export const User = ({onLogout }) => {
+  const handleLogout = () => {
+    // 从localStorage中移除token
+    localStorage.removeItem('token');
+    if (onLogout) {
+      onLogout();
+    }
+  };
+
   return (
     <div className={styles['layout']}>
       {/*<Space direction="vertical" size={16}>*/}
@@ -19,7 +27,7 @@ export const User = ({onLogout }) => {
                   htmlType="submit"
                   className={styles['login-button']} // 使用定义的样式
                   style={{ width: '120px'}}
-                  onClick={onLogout}>
+                  onClick={handleLogout} >
                   退出登录
             </Button>
           </>

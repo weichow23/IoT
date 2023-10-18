@@ -1,0 +1,17 @@
+blinker
+cffi
+click
+colorama
+cryptography
+Flask
+Flask-Mail
+Flask-SQLAlchemy
+greenlet
+itsdangerous
+Jinja2
+MarkupSafe
+paho-mqtt
+pycparser
+PyMySQL
+SQLAlchemy
+Werkzeug

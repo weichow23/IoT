@@ -1,6 +1,4 @@
 /* eslint-disable */
-// 日志，左边的图片应该设置不了链接，首先它是在Navbar中的那个组件，其次没有router，简单的想法是跳到github，但是搞了好久也没有成功.还会有各种奇怪问题
-// 估计是被<Nav>给屏蔽了
 import { Ul, Li, LogoUl} from './styles'
 import Logo from '../../assets/logo.png'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
@@ -29,10 +27,13 @@ function RightNav(props: Props) {
   const [showUser, setShowUser] = useState(true);//是否显示登录页面
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // token存在则自动登录，否则就退出
   React.useEffect(() => {
       const token = localStorage.getItem('token');
       if (token) {
         setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
       }
     }, []);
 

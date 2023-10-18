@@ -131,7 +131,7 @@ export const Stat: React.FC = () => {
         pagination={pagination}
         onChange={handleTableChange}
       />
-      <MapContainer center={[22.187404991398786, 113.81835937500001]} zoom={10} style={{height: "400px", width: "100%"}}>
+      <MapContainer center={[22.337404991398786, 114.11835937500001]} zoom={10} style={{height: "400px", width: "100%"}}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

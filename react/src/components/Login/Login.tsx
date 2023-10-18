@@ -10,10 +10,11 @@ import { md5 } from 'js-md5';
 import { useUser } from '@/components/User/UserState'
 
 export const Login =  ({ onLoginSuccess }) => {
-  const [form] = Form.useForm();
   const [tabKey, setTabKey] = useState('login');
+  const [form] = Form.useForm();
   const { dispatch } = useUser();
-
+  const [loginForm] = Form.useForm();
+  const [registerForm] = Form.useForm();
   // 当组件挂载时，检查 localStorage 中是否有 token; 该部分检查在RightNav.tsx中也有
   React.useEffect(() => {
     const token = localStorage.getItem('token');
@@ -25,9 +26,12 @@ export const Login =  ({ onLoginSuccess }) => {
   const handleSubmit = async () => {
     console.log('Current tabKey:', tabKey);
     try {
-      const values = await form.validateFields();
-      console.log('Form values:', values);
-
+      let values;
+      if(tabKey === 'login') {
+        values = await loginForm.validateFields(['email', 'password']);
+      } else if(tabKey === 'register') {
+        values = await registerForm.validateFields(['username', 'registerEmail', 'registerPassword', 'confirmPassword']);
+      }
       if (tabKey === 'login') {
         const { email, password } = values;
         const encryptedPassword = md5(password);
@@ -105,18 +109,22 @@ export const Login =  ({ onLoginSuccess }) => {
           <img className={styles.logo} src={tabKey === 'admin' ? logo_root : logo} alt="Logo" />
           <div className={styles.title}>IoT 物联网设备管理系统</div>
         </div>
-        <Form
-          id="formLogin"
-          className="user-layout-login"
-          form={form}
-          onFinish={handleSubmit}
+
+        <Tabs
+          defaultActiveKey="login"
+          centered
+          onChange={handleTabChange}
         >
-          <Tabs
-            defaultActiveKey="login"
-            centered
-            onChange={handleTabChange}
-          >
-            <Tabs.TabPane key="login" tab="登录">
+          <Tabs.TabPane key="login" tab="登录">
+            <Form
+              form={loginForm}
+              id="formLogin"
+              className="user-layout-login"
+              onFinish={handleSubmit}
+              onFinishFailed={(errorInfo) => {
+                console.error("Failed to submit form:", errorInfo);
+              }}
+            >
               <Form.Item
                 name="email"
                 rules={[
@@ -155,10 +163,20 @@ export const Login =  ({ onLoginSuccess }) => {
                   登录
                 </Button>
               </Form.Item>
-            </Tabs.TabPane>
+            </Form>
+          </Tabs.TabPane>
 
-            <Tabs.TabPane key="register" tab="注册">
-              <Form.Item
+          <Tabs.TabPane key="register" tab="注册">
+            <Form
+              form={registerForm}
+              id="formRegister"
+              className="user-layout-register"
+              onFinish={handleSubmit}
+              onFinishFailed={(errorInfo) => {
+                console.error("Failed to submit form:", errorInfo);
+              }}
+            >
+                            <Form.Item
                 name="username"
                 rules={[
                   { required: true, message: '请输入用户名' },
@@ -231,32 +249,15 @@ export const Login =  ({ onLoginSuccess }) => {
                   注册
                 </Button>
               </Form.Item>
-            </Tabs.TabPane>
+            </Form>
+          </Tabs.TabPane>
 
-            <Tabs.TabPane key="admin" tab="管理员">
-              <Form.Item>
-                <Input.Password
-                  size="large"
-                  prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  placeholder="密码"
-                />
-              </Form.Item>
-              <Form.Item style={{ marginTop: '24px' , textAlign: 'center' }}>
-                <Button
-                  size="large"
-                  type="primary"
-                  htmlType="submit"
-                  className="login-button"
-                  style={{ width: '150px'}}
-                  block
-                >
-                  登录
-                </Button>
-              </Form.Item>
-            </Tabs.TabPane>
+          <Tabs.TabPane key="admin" tab="管理员">
+            remain to be envelopment
+            {/* ... 管理员登录表单 ... */}
+          </Tabs.TabPane>
+        </Tabs>
 
-          </Tabs>
-        </Form>
       </Card>
     </div>
   );
