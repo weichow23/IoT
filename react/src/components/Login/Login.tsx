@@ -15,6 +15,7 @@ export const Login =  ({ onLoginSuccess }) => {
   const { dispatch } = useUser();
   const [loginForm] = Form.useForm();
   const [registerForm] = Form.useForm();
+  const [rootForm] = Form.useForm();
   // 当组件挂载时，检查 localStorage 中是否有 token; 该部分检查在RightNav.tsx中也有
   React.useEffect(() => {
     const token = localStorage.getItem('token');
@@ -31,6 +32,8 @@ export const Login =  ({ onLoginSuccess }) => {
         values = await loginForm.validateFields(['email', 'password']);
       } else if(tabKey === 'register') {
         values = await registerForm.validateFields(['username', 'registerEmail', 'registerPassword', 'confirmPassword']);
+      } else if(tabKey === 'admin') {
+        values = await rootForm.validateFields(['rootpassword']);
       }
       if (tabKey === 'login') {
         const { email, password } = values;
@@ -91,6 +94,33 @@ export const Login =  ({ onLoginSuccess }) => {
           console.log(error);
           alert("请求失败");
         });
+      }
+      else if (tabKey === 'admin'){
+       const rootpassword  = md5(values.rootpassword);
+        axios.post('http://localhost:5000/login', { email:'root', password: rootpassword })
+          .then((response) => {
+            if(response.data.code === 0) {
+              dispatch({ type: 'setEmail', payload: 'root' });
+              dispatch({ type: 'setToken', payload: 'none' });
+              onLoginSuccess();
+            } else {
+              alert("管理员密码错误");
+            }
+          }).catch((error) => {
+            if (error.response) {
+              // 请求已发送，服务器也已响应（状态码在2xx之外）
+              console.log('Data:', error.response.data);
+              console.log('Status:', error.response.status);
+              console.log('Headers:', error.response.headers);
+            } else if (error.request) {
+              // 请求已发送，但没有收到响应
+              console.log('Request data:', error.request);
+            } else {
+              // 在设置请求时触发某些事情，触发了一个错误
+              console.log('Error message:', error.message);
+            }
+            alert("root登录失败");
+          });
       }
     } catch (errorInfo) {
       console.log('Failed:', errorInfo);
@@ -176,7 +206,7 @@ export const Login =  ({ onLoginSuccess }) => {
                 console.error("Failed to submit form:", errorInfo);
               }}
             >
-                            <Form.Item
+              <Form.Item
                 name="username"
                 rules={[
                   { required: true, message: '请输入用户名' },
@@ -253,8 +283,41 @@ export const Login =  ({ onLoginSuccess }) => {
           </Tabs.TabPane>
 
           <Tabs.TabPane key="admin" tab="管理员">
-            remain to be envelopment
-            {/* ... 管理员登录表单 ... */}
+            <Form
+              form={rootForm}
+              id="formLogin"
+              className="user-layout-login"
+              onFinish={handleSubmit}
+              onFinishFailed={(errorInfo) => {
+                console.error("Failed to submit form:", errorInfo);
+              }}
+            >
+              <Form.Item
+                name="rootpassword"
+                rules={[
+                  { required: true, message: '请输入密码' },
+                  { pattern: /^[A-Za-z0-9]{4,}$/, message: '密码只能由数字和字母组成且不少于4位' }
+                ]}
+              >
+                <Input.Password
+                  size="large"
+                  prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                  placeholder="密码"
+                />
+              </Form.Item>
+              <Form.Item style={{ marginTop: '24px' , textAlign: 'center' }}>
+                <Button
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  className="login-button"
+                  style={{ width: '170px'}}
+                  block
+                >
+                  以管理员身份登录
+                </Button>
+              </Form.Item>
+            </Form>
           </Tabs.TabPane>
         </Tabs>
 
