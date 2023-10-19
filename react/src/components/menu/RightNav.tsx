@@ -4,6 +4,7 @@ import Logo from '../../assets/logo.png'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import { faHome, faPersonCircleQuestion, faUser, faServer} from '@fortawesome/free-solid-svg-icons';
 import { Device } from '@/components/Device/Device'
+import { DeviceRoot } from '@/components/Device/DeviceRoot'
 import { Main } from '@/components/Main/Main'
 import { User } from '@/components/User/User'
 import { UserRoot } from '@/components/User/UserRoot'
@@ -31,15 +32,7 @@ function RightNav(props: Props) {
   const { state } = useUser();
   const [isRoot, setIsRoot] = useState(false); // 添加新的状态isRoot
 
-  // token存在则自动登录，否则就退出
-  // React.useEffect(() => {
-  //     const token = localStorage.getItem('token');
-  //     if (token) {
-  //       setIsAuthenticated(true);
-  //     } else {
-  //       setIsAuthenticated(false);
-  //     }
-  //   }, []);
+  // token存在则自动登录，否则就退出; 管理员模式由于安全性的考虑不会自动保存登录状态
   React.useEffect(() => {
       const token = localStorage.getItem('token');
       if (token) {
@@ -47,9 +40,12 @@ function RightNav(props: Props) {
       } else {
         setIsAuthenticated(false);
       }
-      console.log('token state.email', state.email);
-      setIsRoot(state.email === 'root');  // TODO:问题似乎出在管理员模式登录后email好像还是null，没有变过
-  }, [state.email]);
+    }, []);
+
+  const handleLoginSuccess = (status) => {
+    setIsAuthenticated(status.isAuthenticated);
+    setIsRoot(status.isRoot);
+  };
 
   return (
   <UserProvider>
@@ -109,17 +105,19 @@ function RightNav(props: Props) {
         </Route>        
 
         <Route exact path='/Device'>
-          {isAuthenticated ? <Device /> : <Login onLoginSuccess={() => setIsAuthenticated(true)} />}
+          {isAuthenticated ? (
+              isRoot ? <DeviceRoot /> :
+                <Device />) :
+              <Login onLoginSuccess={handleLoginSuccess} />}
         </Route>
         <Route exact path='/QA'>
           <QA />
         </Route>
         <Route exact path='/User'>
-          {/*{isAuthenticated ? <User onLogout={() => setIsAuthenticated(false)} /> : <Login onLoginSuccess={() => setIsAuthenticated(true)} />}*/}
           {isAuthenticated ? (
               isRoot ? <UserRoot onLogout={() => setIsAuthenticated(false)} /> :
                 <User onLogout={() => setIsAuthenticated(false)} />) :
-              <Login onLoginSuccess={() => setIsAuthenticated(true)} />}
+              <Login onLoginSuccess={handleLoginSuccess} />}
         </Route>
         <Redirect to='/' />
       </Switch>

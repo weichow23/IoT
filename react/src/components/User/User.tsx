@@ -1,6 +1,5 @@
 /* eslint-disable */
 import styles from './User.module.scss'
-import IcLogo from "@/assets/zju.png";
 import { UserInfo } from '@/components/User/UserInfo'
 import { Typography,Card,Image,Space, Button} from 'antd';
 const { Title,Paragraph } = Typography;

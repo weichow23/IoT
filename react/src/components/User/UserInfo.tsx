@@ -30,7 +30,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
                 }
             });
             if (response.data.code === 0) {
-                console.log('nickname:', response.data.data);
+                // console.log('nickname:', response.data.data);
                 setNickname(response.data.data);
                 dispatch({ type: 'setUsername', payload: response.data.data });
             } else {

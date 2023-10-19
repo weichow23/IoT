@@ -16,6 +16,7 @@ export const Login =  ({ onLoginSuccess }) => {
   const [loginForm] = Form.useForm();
   const [registerForm] = Form.useForm();
   const [rootForm] = Form.useForm();
+  
   // 当组件挂载时，检查 localStorage 中是否有 token; 该部分检查在RightNav.tsx中也有
   React.useEffect(() => {
     const token = localStorage.getItem('token');
@@ -25,7 +26,7 @@ export const Login =  ({ onLoginSuccess }) => {
   }, [dispatch]);
 
   const handleSubmit = async () => {
-    console.log('Current tabKey:', tabKey);
+    // console.log('Current tabKey:', tabKey);
     try {
       let values;
       if(tabKey === 'login') {
@@ -45,9 +46,13 @@ export const Login =  ({ onLoginSuccess }) => {
               // 更新 context 中的用户数据
               dispatch({ type: 'setEmail', payload: response.data.email });
               dispatch({ type: 'setToken', payload: response.data.data });
-              console.log('Email:', email);
-              console.log('Token:', response.data.data);
-              onLoginSuccess();
+              // console.log('Email:', email);
+              // console.log('Token:', response.data.data);
+              // console.log('Token:', response.data);
+              onLoginSuccess({
+                isAuthenticated: true,
+                isRoot: false
+              });
 
               // 将 token 保存到 localStorage 并在 30 分钟后自动删除
               localStorage.setItem('token', response.data.data);
@@ -83,7 +88,7 @@ export const Login =  ({ onLoginSuccess }) => {
         })
         .then((response) => {
           alert(response.data.msg); // Alert the message from server
-          console.log(response.data)
+          // console.log(response.data)
           if (response.data.code === 0) {
             // Here, in case of successful registration (assuming code: 0 is success),
             // you may want to do something, e.g., reload the page
@@ -100,9 +105,12 @@ export const Login =  ({ onLoginSuccess }) => {
         axios.post('http://localhost:5000/login', { email:'root', password: rootpassword })
           .then((response) => {
             if(response.data.code === 0) {
-              dispatch({ type: 'setEmail', payload: 'root' });
+              dispatch({ type: 'setEmail', payload: response.data.data });
               dispatch({ type: 'setToken', payload: 'none' });
-              onLoginSuccess();
+              onLoginSuccess({
+                isAuthenticated: true,
+                isRoot: true
+              });
             } else {
               alert("管理员密码错误");
             }
