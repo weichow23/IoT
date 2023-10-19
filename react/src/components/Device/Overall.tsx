@@ -33,7 +33,7 @@ export const Overall: React.FC = () => {
     const myLineChart = echarts.init(lineChartRef.current!);
 
     drawPie(myPieChart);
-    drawBar(myBarChart);
+    drawCalendar(myBarChart);
     drawLine(myLineChart);
 
     return () => {
@@ -44,68 +44,139 @@ export const Overall: React.FC = () => {
   }, [onlineDevice, offlineDevice, recentDay, barData, total, normal, alert]); // 这里依赖于可能变动的状态变量
 
   const drawPie = (chart: echarts.ECharts) => {
+  const option = {
+    tooltip: {
+      trigger: "item",
+      formatter: '{a} <br/>{b} : {c} ({d}%)' // 格式化鼠标悬停时显示的提示信息
+    },
+    legend: {
+      top: "5%",
+      left: "center",
+      data: ['在线设备', '离线设备'] // 定义图例的数据
+    },
+    series: [
+      {
+        name: "设备在线情况",
+        type: "pie",
+        radius: [20, 140], // 南丁格尔图的内半径和外半径
+        center: ['50%', '50%'], // 图表的中心位置
+        roseType: 'radius', // 南丁格尔图的类型，这里使用'radius'
+        itemStyle: {
+          borderRadius: 5, // 设置扇形的边角圆滑度
+          borderColor: "#fff",
+          borderWidth: 2,
+        },
+        label: {
+          show: false,
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: "20",
+            fontWeight: "bold",
+          },
+        },
+        data: [
+          { value: onlineDevice, name: '在线设备' },
+          { value: offlineDevice, name: '离线设备' }
+        ],
+      },
+    ],
+  };
+  chart.setOption(option);
+}
+
+  // TODO： 这里似乎还有点问题，不知道年份都是2001年而不是2010年，当改对注入后重新修改下列代码
+  const getVirtualData = (year: number, month: number) => {
+      const data: [string, number][] = [];
+      recentDay.forEach((dateStr, index) => {
+        const date = new Date(dateStr);
+        console.log(date);
+        console.log('Checking year and month:', date.getFullYear(), date.getMonth() + 1, year, month);
+
+        // if (date.getFullYear() === year && date.getMonth() + 1 === month) {
+        if (date.getMonth() + 1 === month) {
+          console.log('Inside the IF condition');
+          // const formattedDate = echarts.time.format(date, '{yyyy}-{MM}-{dd}', false);
+          const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+          data.push([formattedDate, barData[index]]);
+        }
+
+      });
+      console.log(data);
+      return data;
+  }
+
+  const drawCalendar = (chart: echarts.ECharts) => {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+    const calendarData = getVirtualData(currentYear, currentMonth);
+
+    const recentDeviceDate = new Date(recentDay[recentDay.length - 1]);
+    if(recentDeviceDate.getFullYear() === currentYear && recentDeviceDate.getMonth() + 1 === currentMonth) {
+      const index = calendarData.findIndex(data => data[0] === echarts.time.format(recentDeviceDate, '{yyyy}-{MM}-{dd}', false));
+      if(index !== -1) {
+        calendarData[index][1] = barData[barData.length - 1];
+      }
+    }
+
     const option = {
       tooltip: {
-        trigger: "item",
+        position: 'top'
       },
-      legend: {
-        top: "5%",
-        left: "center",
-      },
-      series: [
+      visualMap: [
         {
-          name: "设备在线情况",
-          type: "pie",
-          radius: ["40%", "70%"],
-          avoidLabelOverlap: false,
-          itemStyle: {
-            borderRadius: 10,
-            borderColor: "#fff",
-            borderWidth: 2,
+          min: 0,
+          max: 4,
+          inRange: {
+            color: ['grey', 'blue'],  // color range
+            opacity: [0, 0.3]
           },
-          label: {
-            show: false,
-            position: "center",
-          },
-          emphasis: {
-            label: {
-              show: true,
-              fontSize: "40",
-              fontWeight: "bold",
+          controller: {
+            inRange: {
+              opacity: [0.3, 0.6]
             },
+            outOfRange: {
+              color: '#ccc'
+            }
           },
-          labelLine: {
-            show: false,
-          },
-          data: [
-            { value: onlineDevice, name: '在线设备' },
-            { value: offlineDevice, name: '离线设备' }
-          ],
-        },
+          seriesIndex: [0],
+          orient: 'horizontal',
+          left: 'center',
+          bottom: 20
+        }
       ],
-    };
-    chart.setOption(option);
-  }
-
-  const drawBar = (chart: echarts.ECharts) => {
-    const option = {
-      xAxis: {
-        type: 'category',
-        data: recentDay,
-      },
-      yAxis: {
-        type: 'value',
-      },
+      calendar: [
+        {
+          orient: 'vertical',
+          left: 'center',  // This makes sure that the calendar is centered
+          top: 'middle',  // This vertically centers the calendar
+          yearLabel: {
+            margin: 40
+          },
+          monthLabel: {
+            nameMap: 'cn',
+            margin: 20
+          },
+          dayLabel: {
+            firstDay: 1,
+            nameMap: 'cn'
+          },
+          cellSize: 40,
+          range: `${currentYear}-${currentMonth}`
+        }
+      ],
       series: [
         {
-          data: barData,
-          type: 'bar',
-        },
-      ],
+          type: 'heatmap',
+          coordinateSystem: 'calendar',
+          data: calendarData
+        }
+      ]
     };
+
     chart.setOption(option);
   }
-
 
   const drawLine = (chart: echarts.ECharts) => {
     const option = {

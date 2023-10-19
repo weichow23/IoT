@@ -1,7 +1,6 @@
 /* eslint-disable */
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Avatar, Divider, Row, Col, Input, Button, message } from 'antd';
-import { Input as AntdInput } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import styles from './User.module.scss';
 import ReactIcon from '@/assets/react.svg';
