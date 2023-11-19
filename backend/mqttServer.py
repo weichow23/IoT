@@ -14,7 +14,7 @@ session = Session()
 MQTT_Broker = "127.0.0.1"
 MQTT_Port = 1883
 Keep_Alive_Interval = 60
-MQTT_Topic = "iotclient"
+MQTT_Topic = "testapp"
 
 
 def on_connect(client, userdata, flags, rc):
@@ -23,17 +23,13 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    # print(msg.topic+" " + ":" + str(msg.payload))
+    print("MQTT Data Received...")
     var = str(msg.payload)
+    # var = msg.payload.decode()
     n = re.findall(r":(.+?),", var)
     m = re.findall(r"\"value\":(.+?)}", var)
     print(var)
-    # print(n)
-    # print(m)
     n.append(m[0])
-    # print(datetime.time())
-    # print(n)
-    # stmt = f'insert into device_message(alert,clientId,info,lat,lng,timestamp,value) values ("{int(n[0])}", "{eval(n[1])}", "{eval(n[2])}", "{float(n[3])}", "{float(n[4])}", "{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(float(n[5]) / 1000)))}","{int(n[6])}")'
     stmt = text(
         f'insert into device_message(alert,clientId,info,lat,lng,timestamp,value) values (:alert, :clientId, :info, :lat, :lng, :timestamp, :value)')
     params = {

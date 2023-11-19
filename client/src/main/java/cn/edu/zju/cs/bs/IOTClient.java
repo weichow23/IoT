@@ -6,12 +6,11 @@ import java.util.Vector;
 
 public class IOTClient {
     public static void main(String[] args) {
-//         MQTTPublisher mqttPublisher = MQTTPublisher.getInstance(); // MQTT publisher object
-//         mqttPublisher.publishMessageSimulation(); // MQTT News
         int devices = 1;
         String mqttServer = "tcp://localhost:1883";
         String topic = "testapp";
         String clientPrefix = "device";
+
         try {
             Properties properties = new Properties();
             FileInputStream in = new FileInputStream("iot.properties");
@@ -20,6 +19,7 @@ public class IOTClient {
             mqttServer = properties.getProperty("server");
             topic = properties.getProperty("topic");
             clientPrefix = properties.getProperty("prefix");
+
             Vector<WorkerThread> threadVector = new Vector<WorkerThread>();
             for (int i = 0; i < devices; i++) {
                 WorkerThread thread = new WorkerThread();

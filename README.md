@@ -1,8 +1,164 @@
 # IoT 物联网设备管理平台
 
-🙅‍2023年11月13日前提交**设计文档**
+功能全部实现，文档写认真一点就可以满绩，最后一节课去验收的还能拿到接近满分，稍微差点功能或者前端比较难看或者文档写的不详细就会扣分，另外代码不要抄袭，听说可能会查重
 
-🙅‍2024年1月5日前提其他内容
+#####  所需环境
+
++ [Node.js](https://nodejs.org/en/download)
+
++ [python3.x]( https://www.python.org/getit/)
+
++ [MySQL80](https://dev.mysql.com/downloads/mysql/)
+
++ [mosquitto](https://mosquitto.org/download/)
+  + mosquitto需要进行一定的配置，教程请见[这里](https://www.cnblogs.com/dissun/p/10505007.html)
+  
++ [maven](https://maven.apache.org/download.cgi)
+
+<img src="report/pic/demo.png" style="zoom:60%;" />
+
+## 前端
+
+使用nvm来控制nodejs版本(需要降低版本来和Vue版本对应)与前端的React框架对应
+
+```shell
+nvm install 19
+nvm use 19
+```
+
+然后用yarn来运行前端
+
+```shell
+# frontend
+rm -rf node_modules
+rm yarn.lock
+yarn install
+yarn start
+
+# debug
+yarn lint
+```
+
+
+
+
+
+react (nodejs>=16) 17，18也要报错
+
+npm install react-leaflet leaflet --legacy-peer-deps
+
+npm update --save-dev eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-promise
+
+## 后端
+
+```shell
+# backend
+pip install -r requirements.txt
+# 如果报错缺乏14安装工具， python -m pip install --upgrade pip
+```
+
+[解决14构建工具错误](https://blog.csdn.net/u012637358/article/details/123214825)
+
+
+
+使用`mysql workbench`打开`../sql`文件夹中的`create.sql`文件，执行建表
+
+```
+账号 bs
+密码  bsbs
+root bsbs
+```
+
+用pycharm打卡整个工程
+
++ 配置好运行环境运行`backendServer.py`，运行在`localhost:5000`
+
+```shell
+netstat -ano | findstr :1883
+taskkill /F /PID 5748
+# 运行mqttServer.py之前要先运行下列语句打开服务(Eclipse Mosquitto是一个流行的开源MQTT服务器软件)
+mosquitto
+```
+
++ 再开启一个终端，运行`mqttServer.py`，准备监听client信息
+
+#### 3. Client虚拟信息发送
+
+由老师提供，几乎没有进行更改
+
+```shell
+# 首先要运行后端程序
+mvn clean package
+# 同时复制一份iot道target
+cd target
+java -jar iotclient-1.0.0.jar
+```
+
+
+
+此时就可以在本机前端进行一系列操作了，详见**用户手册**
+
+```
+普通用户密码都是zhouwei
+root用户密码是root
+```
+
+
+
+## TODO
+
+管理员模式改善（包括修改密码应该只出现一个框， 设备管理应该显示所有用户的设备等等）
+
+client监听（把信息都移到香港岛，并且修改时间）
+
+后端代码改写降低查重率
+
+1. 使用 [Zeabur](https://zeabur.com/home/) 进行一站式、全自动的项目部署，且自带 CI/CD 和 SSL 证书
+
+2. 华为云学生端
+
+🙅‍2~~023年11月13日前提交**设计文档**，占20%最终总评成绩~~
+
+🙅‍2024年1月5日前提交： 
+
+1、程序代码和实验报告。 
+
+2、**制作一个docker容器，包含运行网站所需的软件** （docker只能运行一个软件，不知道这个什么意思）
+
+3、录制一个功能演示的操作视频
+
+4、提交的文档包括： 
+
+（2）**设计文档** 
+
+（3）其他文档（如**使用手册**、**测试报告**、**开发体会**、**小结**等）， 
+
+（4）源代码文件（报错sql） 
+
+打包上传学在浙大或发送到hu_xj@zju.edu.cn
+
+
+
+## 原始
+
+#### 文档详见report文件夹
+
++ 用户手册、运行指南手册、接口文档等文档
++ 文档内有安装、配置、启动、使用的全套说明
++ 附上了相关接口文档，方便后续改善部分功能
++ 附上了中期提交的设计报告，最终实现功能有所完善
+
+#### 建表文件详见build文件夹
+
++ `create.sql`文件即为本次的数据库建表文件
+
+#### 相关技术栈
+
++ 客户端：老师提供的iotclient
+
+
+
+
 
 #### 模式设计
 
