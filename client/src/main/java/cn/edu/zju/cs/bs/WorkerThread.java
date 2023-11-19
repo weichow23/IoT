@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 import com.alibaba.fastjson.JSONObject;
+import java.util.concurrent.TimeUnit;
 
 @Data
 public class WorkerThread extends Thread {
@@ -42,6 +43,13 @@ public class WorkerThread extends Thread {
 
                 SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date now = new Date();
+                // + ---------------------------------------- +
+                long nowMillis = now.getTime();
+                long twoWeeksAgoMillis = nowMillis - TimeUnit.DAYS.toMillis(14);
+                long randomTimestamp = twoWeeksAgoMillis + (long) (rand.nextDouble() * (nowMillis - twoWeeksAgoMillis));
+                // also change timestep to sdf, but not needed
+                // String formattedTimestamp = sdf.format(new Date(randomTimestamp));
+                // + ---------------------------------------- +
                 int value = rand.nextInt(100);
                 IOTMessage msg = new IOTMessage();
                 msg.setClientId(clientId);
@@ -53,7 +61,8 @@ public class WorkerThread extends Thread {
                 // change to Hong Kong
                 msg.setLng(114.8 + rand.nextFloat() * 0.6);
                 msg.setLat(22.165 + rand.nextFloat() * 0.4);
-                msg.setTimestamp(now.getTime());
+                //msg.setTimestamp(now.getTime());
+                msg.setTimestamp(randomTimestamp);
                 content = JSONObject.toJSONString(msg);
                 System.out.println("Publishing message: " + content);
                 MqttMessage message = new MqttMessage(content.getBytes());
