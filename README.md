@@ -1,25 +1,8 @@
 # IoT 物联网设备管理平台
 
-功能全部实现，文档写认真一点就可以满绩，最后一节课去验收的还能拿到接近满分，稍微差点功能或者前端比较难看或者文档写的不详细就会扣分，另外代码不要抄袭，听说可能会查重
-
-#####  所需环境
-
-+ [Node.js](https://nodejs.org/en/download)
-
-+ [python3.x]( https://www.python.org/getit/)
-
-+ [MySQL80](https://dev.mysql.com/downloads/mysql/)
-
-+ [mosquitto](https://mosquitto.org/download/)
-  + mosquitto需要进行一定的配置，教程请见[这里](https://www.cnblogs.com/dissun/p/10505007.html)
-  
-+ [maven](https://maven.apache.org/download.cgi)
-
-<img src="report/pic/demo.png" style="zoom:60%;" />
+<img src="report/demo.png" style="zoom:60%;" />
 
 ## 前端
-
-使用nvm来控制nodejs版本(需要降低版本来和Vue版本对应)与前端的React框架对应
 
 ```shell
 nvm install 19
@@ -33,21 +16,17 @@ nvm use 19
 rm -rf node_modules
 rm yarn.lock
 yarn install
+# 第一次之后直接进入react目录运行就行
 yarn start
-
-# debug
-yarn lint
 ```
 
+如果报错可能需要运行
 
-
-
-
-react (nodejs>=16) 17，18也要报错
-
+```shell
 npm install react-leaflet leaflet --legacy-peer-deps
 
 npm update --save-dev eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-promise
+```
 
 ## 后端
 
@@ -59,9 +38,7 @@ pip install -r requirements.txt
 
 [解决14构建工具错误](https://blog.csdn.net/u012637358/article/details/123214825)
 
-
-
-使用`mysql workbench`打开`../sql`文件夹中的`create.sql`文件，执行建表
+使用`mysql workbench`打开`init.sql`文件，执行建表
 
 ```
 账号 bs
@@ -107,15 +84,25 @@ root用户密码是root
 
 ## TODO
 
-管理员模式改善（包括修改密码应该只出现一个框， 设备管理应该显示所有用户的设备等等）
+可视化部分，信息点在地图中标出来， 地图的位置
 
-client监听（把信息都移到香港岛，并且修改时间）
+把设备表换一下， 序号，设备名，数据流(感觉不需要数据流）这些改改
+
+增加一些设备，减少一些信息
+
+管理员模式改善（包括修改密码应该只出现一个框，修改密码的时候删掉token的显示，然后密码的显示方向可能得改一改， 设备管理应该显示所有用户的设备等等）
+
+
 
 后端代码改写降低查重率
 
 1. 使用 [Zeabur](https://zeabur.com/home/) 进行一站式、全自动的项目部署，且自带 CI/CD 和 SSL 证书
 
 2. 华为云学生端
+
+
+
+使用文档写好了，再去改测试报告和录视频
 
 🙅‍2~~023年11月13日前提交**设计文档**，占20%最终总评成绩~~
 
@@ -129,34 +116,19 @@ client监听（把信息都移到香港岛，并且修改时间）
 
 4、提交的文档包括： 
 
-（2）**设计文档** 
+（2）里面的文档
 
-（3）其他文档（如**使用手册**、**测试报告**、**开发体会**、**小结**等）， 
+（4）源代码文件（包括sql） 
 
-（4）源代码文件（报错sql） 
-
-打包上传学在浙大或发送到hu_xj@zju.edu.cn
+打包上传学在浙大
 
 
 
-## 原始
-
-#### 文档详见report文件夹
-
-+ 用户手册、运行指南手册、接口文档等文档
-+ 文档内有安装、配置、启动、使用的全套说明
-+ 附上了相关接口文档，方便后续改善部分功能
-+ 附上了中期提交的设计报告，最终实现功能有所完善
-
-#### 建表文件详见build文件夹
-
-+ `create.sql`文件即为本次的数据库建表文件
-
-#### 相关技术栈
-
-+ 客户端：老师提供的iotclient
+### 文档梗概
 
 
+
+**开发文档和环境配置**：  主要记录了我的一些开发过程，以及有详细的环境配置教程
 
 
 

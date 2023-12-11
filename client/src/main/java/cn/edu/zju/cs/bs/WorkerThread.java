@@ -58,9 +58,12 @@ public class WorkerThread extends Thread {
                 // alter if value > 80
                 msg.setAlert(value > 80 ? 1 : 0);
                 rand.nextFloat();
-                // change to Hong Kong
-                msg.setLng(114.8 + rand.nextFloat() * 0.6);
-                msg.setLat(22.165 + rand.nextFloat() * 0.4);
+                // site in HongKong
+//                 msg.setLng(114.3 + rand.nextFloat() * 0.6);
+//                 msg.setLat(22.165 + rand.nextFloat() * 0.4);
+                // site in HangZhou
+                msg.setLng(119.9 + rand.nextFloat() * 0.6);
+                msg.setLat(30.1 + rand.nextFloat() * 0.4);
                 //msg.setTimestamp(now.getTime());
                 msg.setTimestamp(randomTimestamp);
                 content = JSONObject.toJSONString(msg);

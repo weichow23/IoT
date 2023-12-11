@@ -1,22 +1,16 @@
 import json
-
-from backend.iot_app import create_app  # TODO:具体连接数据库
-from backend.iot_app import db
-from backend.iot_app.models import *
+from backend.flask_server import db, create_server, User, Device, Message
 from flask import request, jsonify
 from flask_cors import CORS
-from backend.iot_app import token
+import backend.flask_server as token
 import datetime
 
-app = create_app()
+app = create_server()
 CORS(app)  # 为app应用启用CORS, 启用跨域同源
-
-# TODO:通过蓝图，将该文件分成三个文件，现在文件架构不够结构化
 
 @app.route('/getMessage', methods=['GET'])
 def getMessage():
     Id = request.args.get('clientId')
-    # print(Id)
     messages = Message.query.all()
     result = {
         "code": 0,

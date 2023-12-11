@@ -4,7 +4,6 @@ click
 colorama
 cryptography
 Flask
-Flask-Mail
 Flask-SQLAlchemy
 greenlet
 itsdangerous

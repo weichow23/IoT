@@ -4,7 +4,7 @@ import re
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
-# engine = create_engine("mysql+pymysql://root:bsbs@localhost:3306/iot_app", encoding="utf-8")
+
 engine = create_engine("mysql+pymysql://root:bsbs@localhost:3306/iot_app")
 # 格式说明：数据库类型 + 数据库驱动器://用户名:密码@地址:端口/数据库名
 Session = sessionmaker(bind=engine)
