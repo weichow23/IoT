@@ -18,7 +18,6 @@ export const UserRoot = ({onLogout }) => {
  const isEditing = (record) => record.id === editingId;
  const [form] = Form.useForm();
  const EditableCell = ({ editing, dataIndex, title, children, ...restProps }) => {
-    // 只有当 editing 为 true 并且 dataIndex 为 'password' 时，我们才渲染输入框
     const isPasswordCell = dataIndex === 'password';
 
     return (
@@ -57,7 +56,7 @@ export const UserRoot = ({onLogout }) => {
   const handleSavePassword = async (record) => {
   try {
     const values = await form.validateFields();
-    const response = await axios.post('http://localhost:5000/alterPassword', {
+    const response = await axios.post('http://localhost:3790/alterPassword', {
       oldPsw: md5(record.password),
       newPsw: md5(values.password), // 使用password作为字段名
       token: record.token,
@@ -76,22 +75,36 @@ export const UserRoot = ({onLogout }) => {
   const [usersData, setUsersData] = useState([]);
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/getAllUser');
-                if (response.data.code === 0) {
-                    setUsersData(response.data.users);
-                } else {
-                    console.error('Failed to fetch users data.');
-                }
-            } catch (error) {
-                console.error('Error fetching users data:', error);
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.get('http://localhost:3790/getAllUser');
+            if (response.data.code === 0) {
+                // 分割 token 字段
+                const formattedData = response.data.users.map(user => {
+                    const [idPart, tokenPart] = user.token.split('}.');
+                    return {
+                        ...user,
+                        id: idPart.replace('{"id": ', ''), // 获取 id 部分
+                        token: tokenPart // 获取 token 部分
+                    };
+                });
+                setUsersData(formattedData);
+            } else {
+                console.error('Failed to fetch users data.');
             }
-        };
-        fetchUsers();
-    }, []);
+        } catch (error) {
+            console.error('Error fetching users data:', error);
+        }
+    };
+    fetchUsers();
+}, []);
 
     const columns = [
+        {
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
+        },
         {
             title: 'Name',
             dataIndex: 'name',
@@ -102,7 +115,7 @@ export const UserRoot = ({onLogout }) => {
             dataIndex: 'token',
             key: 'token',
         },
-        {
+        {  //由于 MD5 是一种单向加密算法，您不能从加密后的结果直接解密得到原始密码, 所以这里显示的是加密后的结果
             title: 'Password',
             dataIndex: 'password',
             render: (text, record) => (isEditing(record) ? (

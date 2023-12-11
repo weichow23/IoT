@@ -40,7 +40,7 @@ export const Login =  ({ onLoginSuccess }) => {
         const { email, password } = values;
         const encryptedPassword = md5(password);
 
-        axios.post('http://localhost:5000/login', { email:email, password: encryptedPassword })
+        axios.post('http://localhost:3790/login', { email:email, password: encryptedPassword })
           .then((response) => {
             if(response.data.code === 0) {
               // 更新 context 中的用户数据
@@ -81,17 +81,14 @@ export const Login =  ({ onLoginSuccess }) => {
       else if (tabKey === 'register') {
         const { username, registerEmail, registerPassword } = values;
         const encryptedPassword = md5(registerPassword);
-        axios.post('http://localhost:5000/register', {
+        axios.post('http://localhost:3790/register', {
           email: registerEmail,
           password: encryptedPassword,
           name: username,
         })
         .then((response) => {
           alert(response.data.msg); // Alert the message from server
-          // console.log(response.data)
           if (response.data.code === 0) {
-            // Here, in case of successful registration (assuming code: 0 is success),
-            // you may want to do something, e.g., reload the page
             location.reload();
           }
         })
@@ -102,11 +99,11 @@ export const Login =  ({ onLoginSuccess }) => {
       }
       else if (tabKey === 'admin'){
        const rootpassword  = md5(values.rootpassword);
-        axios.post('http://localhost:5000/login', { email:'root', password: rootpassword })
+        axios.post('http://localhost:3790/login', { email:'root', password: rootpassword })
           .then((response) => {
             if(response.data.code === 0) {
               dispatch({ type: 'setEmail', payload: response.data.data });
-              dispatch({ type: 'setToken', payload: 'none' });
+              dispatch({ type: 'setToken', payload: 'root' });
               onLoginSuccess({
                 isAuthenticated: true,
                 isRoot: true

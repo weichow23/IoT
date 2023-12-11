@@ -234,7 +234,7 @@ export const Overall: React.FC = () => {
 
   const getDevice = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/getDevice', {
+      const response = await axios.get('http://localhost:3790/getDevice', {
         params: {
           token: state.token,
         },
@@ -284,7 +284,7 @@ export const Overall: React.FC = () => {
 
   const getRecentDevice = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/getRecentDevice', {
+      const response = await axios.get('http://localhost:3790/getRecentDevice', {
         params: {
           token: state.token,
         },
@@ -310,7 +310,7 @@ export const Overall: React.FC = () => {
 
   const getRecentMessage = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/getRecentMessage', {
+      const response = await axios.get('http://localhost:3790/getRecentMessage', {
         params: {
           token: state.token,
         },

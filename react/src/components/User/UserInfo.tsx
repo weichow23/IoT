@@ -23,13 +23,12 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
   useEffect(() => {
     const fetchUserData = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/getUser', {
+            const response = await axios.get('http://localhost:3790/getUser', {
                 params: {
                     token: state.token,
                 }
             });
-            if (response.data.code === 0) {
-                // console.log('nickname:', response.data.data);
+            if (response.data.code === 0 || response.data.code === 1)  {
                 setNickname(response.data.data);
                 dispatch({ type: 'setUsername', payload: response.data.data });
             } else {
@@ -45,7 +44,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
   const handleNicknameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/alterName', {
+      const response = await axios.post('http://localhost:3790/alterName', {
         newName: nickname,
         token: state.token,
       });
@@ -70,7 +69,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/alterPassword', {
+      const response = await axios.post('http://localhost:3790/alterPassword', {
         oldPsw: md5(password1), // 使用MD5哈希
         newPsw: md5(password2), // 使用MD5哈希
         token: state.token,

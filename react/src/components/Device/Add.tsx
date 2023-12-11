@@ -185,7 +185,7 @@ export const Add = ({ visible2, setVisible2 }: AddProps) =>{
     formData.append('file_name', `${userInput}.zip`);
 
     try {
-      const response = await fetch('http://47.120.11.22:5000/upload', {
+      const response = await fetch('http://47.120.11.22:3790/upload', {
         method: 'POST',
         body: formData,
       });

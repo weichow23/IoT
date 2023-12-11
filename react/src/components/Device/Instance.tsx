@@ -16,9 +16,13 @@ const EditableCell = ({
   ...restProps
 }) => {
   const inputNode = <Input />;
-
+  const { state } = useUser();
   // 禁止编辑以下列
   if(["id", "create_time", "operation", "delete"].includes(dataIndex)) {
+    return <td {...restProps}>{children}</td>;
+  }
+
+   if (dataIndex === "description" && editing && state.token === 'root') {
     return <td {...restProps}>{children}</td>;
   }
 
@@ -63,7 +67,13 @@ export const Instance = () => {
 
   const [initialFormValues, setInitialFormValues] = useState({});
   const [form] = Form.useForm();
-  const isEditing = (record) => record.id === editingId;  // 判断当前记录是否在编辑
+  // const isEditing = (record) => record.id === editingId;  // 判断当前记录是否在编辑
+    const isEditing = (record) => {
+      if (state.token === 'root' && record.dataIndex === 'description') {
+        return false;
+      }
+      return record.id === editingId;
+    };
 
   const edit = (record) => {
       form.setFieldsValue({
@@ -90,7 +100,8 @@ export const Instance = () => {
   // Methods
   const getDevice = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/getDevice', {
+        // console.log('Querying Token:', state.token);
+      const response = await axios.get('http://localhost:3790/getDevice', {
         params: {
           token: state.token,
         },
@@ -122,7 +133,7 @@ export const Instance = () => {
   const showCreateModal = () => setVisibleCreate(true);
   const handleCreateSubmit = async (values) => {
     try {
-      const response = await axios.post('http://localhost:5000/createDevice', {
+      const response = await axios.post('http://localhost:3790/createDevice', {
         token: state.token,
         name: values.name,
         code: values.code,
@@ -132,6 +143,7 @@ export const Instance = () => {
       if(response.data.code === 0) {
         getDevice();
         setVisibleCreate(false);
+        window.location.reload();
       } else {
         message.error('设备添加失败: ' + response.data.msg);
       }
@@ -143,7 +155,7 @@ export const Instance = () => {
   const handleAlterSubmit = async (row, id) => {
       console.log(id, row, alterData);
     try {
-      const response = await axios.post('http://localhost:5000/alterDevice', {
+      const response = await axios.post('http://localhost:3790/alterDevice', {
         id: id,
         token: state.token,
         code: row.code,
@@ -172,7 +184,7 @@ export const Instance = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          const response = await axios.get('http://localhost:5000/deleteDevice', {
+          const response = await axios.get('http://localhost:3790/deleteDevice', {
             params: {
               token: state.token,
               name: deviceName,
@@ -200,13 +212,15 @@ export const Instance = () => {
   useEffect(() => {
     const fetchUserData = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/getUser', {
+            const response = await axios.get('http://localhost:3790/getUser', {
                 params: {
                     token: state.token,
                 }
             });
             if (response.data.code === 0) {
                 dispatch({ type: 'setUsername', payload: response.data.data });
+            } else if (response.data.code === 1){
+                message.error("root 模式， 谨慎操作");
             } else {
                 message.error("获取用户信息失败，请重新登录！");
             }
@@ -216,6 +230,10 @@ export const Instance = () => {
     };
     fetchUserData();
   }, [state.token]);
+
+  const descriptionTitle = state.token === 'root' ? (
+      <span style={{ color: 'red' }}>所有者</span>
+    ) : '描述';
 
   // Table configuration
   const columns = [
@@ -229,18 +247,13 @@ export const Instance = () => {
         dataIndex: "name",
         width: "15%",
       },
+      // {
+      //   title: "描述",
+      //   dataIndex: "description",
+      //   width: "20%",
+      // },
       {
-        title: "数据流",
-        dataIndex: "code",
-        width: "15%",
-        render: (text) => (
-          <Tooltip title="仅有...">
-            <a>{text}</a>
-          </Tooltip>
-        ),
-      },
-      {
-        title: "描述",
+        title: descriptionTitle,
         dataIndex: "description",
         width: "20%",
       },
@@ -248,6 +261,10 @@ export const Instance = () => {
         title: "创建日期",
         dataIndex: "create_time",
         width: "20%",
+        render: (text) => {
+          const formattedDate = new Date(text).toLocaleDateString(); // 格式化日期为年月日
+          return <span>{formattedDate}</span>;
+        },
       },
       {
         title: '修改',
@@ -286,7 +303,7 @@ export const Instance = () => {
       onCell: (record) => ({
           record,
           dataIndex: col.dataIndex,
-          title: col.title,
+          title: col.title as string,
           editing: col.dataIndex !== 'option' && isEditing(record),
         }), //这个不能删，删了就没法改了
     };
@@ -303,7 +320,7 @@ export const Instance = () => {
                 <Form.Item label="设备名称" name="name" rules={[{ required: true, message: '请输入设备名称!' }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item label="数据流" name="code" rules={[{ required: true, message: '请输入数据流!' }]}>
+                <Form.Item label="数据源" name="code" rules={[{ required: true, message: '请输入数据流!' }]}>
                     <Input />
                 </Form.Item>
                 <Form.Item label="描述" name="description">
@@ -338,7 +355,7 @@ export const Instance = () => {
               type="primary"
               onClick={showCreateModal}
               className={styles['login-button']}
-              style={{ width: '120px'}}>
+              style={{ width: '120px', display: state.token !== 'root' ? 'block' : 'none' }}>
         添加设备
       </Button>
     </div>

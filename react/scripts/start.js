@@ -118,7 +118,7 @@ checkBrowsers(paths.appPath, isInteractive)
     //   port,
     //   proxy: {
     //     '/api': { // 一般将您的API请求前缀放在这里
-    //       target: 'http://localhost:5000', // 这是您要代理的目标地址
+    //       target: 'http://localhost:3790', // 这是您要代理的目标地址
     //       secure: false,
     //       changeOrigin: true, // 如果需要，启用跨域
     //     }

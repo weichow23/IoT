@@ -7,9 +7,12 @@ import { Select, Button, Table, Tag, Pagination } from 'antd';
 
 <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak='Ur6D7GxIvSY4eegG2qw9Ukr2UhNneZxt'"></script>
 import { useUser } from '@/components/User/UserState';
-
-import { MapContainer, TileLayer, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLocationDot } from '@fortawesome/free-solid-svg-icons';
+import { renderToString } from 'react-dom/server'
 
 export const Stat: React.FC = () => {
   const [deviceList, setDeviceList] = useState([]);
@@ -74,7 +77,7 @@ export const Stat: React.FC = () => {
 
   const getDevice = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/getDevice", { params: { token: state.token }});
+      const res = await axios.get("http://localhost:3790/getDevice", { params: { token: state.token }});
       if (res.data.code === 0) {
         setDeviceList(res.data.data);
       } else {
@@ -87,10 +90,17 @@ export const Stat: React.FC = () => {
 
   const getMessage = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/getMessage", { params: { clientId: selectCode } });
+      const res = await axios.get("http://localhost:3790/getMessage", { params: { clientId: selectCode } });
       if (res.data.code === 0) {
         setMessageList(res.data.data);
-        const data = res.data.data.map((item: any) => ({ lat: item.lat, lng: item.lng }));
+        // const data = res.data.data.map((item: any) => ({ lat: item.lat, lng: item.lng }));
+        // setPolylinePath(data);
+        const data = res.data.data.map((item: any) => ({
+          lat: item.lat,
+          lng: item.lng,
+          alert: item.alert,
+          timestamp: item.timestamp
+        }));
         setPolylinePath(data);
       } else {
         console.log("获取消息失败");
@@ -107,7 +117,17 @@ export const Stat: React.FC = () => {
   const handleTableChange = (pagination: any) => {
     setPagination(pagination);
   };
+  const createCustomIcon = (alert: boolean) => {
+    const iconHtml = renderToString(
+      <FontAwesomeIcon icon={faLocationDot} style={{ color: alert ? 'IndianRed' : 'CornflowerBlue' }} />
+    );
 
+    return L.divIcon({
+      html: iconHtml,
+      iconSize: [25, 25],
+      className: ''
+    });
+  };
   return (
     <div>
       <div style={{position: 'relative', marginBottom: 20, textAlign: 'center', display: deviceList.length ? 'block' : 'none'}}>
@@ -131,13 +151,31 @@ export const Stat: React.FC = () => {
         pagination={pagination}
         onChange={handleTableChange}
       />
-      <MapContainer center={[22.337404991398786, 114.11835937500001]} zoom={10} style={{height: "400px", width: "100%"}}>
+      <MapContainer center={[30.3, 120.4]} zoom={10.4} style={{height: "400px", width: "100%"}}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='...省略...'
         />
-        <Polyline positions={polylinePath} pathOptions={{color: 'blue'}} />
+        {polylinePath.map((point, index) => (
+          <Marker
+            key={index}
+            position={[point.lat, point.lng]}
+            icon={createCustomIcon(point.alert)}
+            >
+            <Popup>{`经度: ${point.lat}, 纬度: ${point.lng} , 时间: ${formatTimestamp(point.timestamp)}`}</Popup>
+          </Marker>
+        ))}
       </MapContainer>
     </div>
   )
 };
+
+function formatTimestamp(timestamp) {
+  const date = new Date(timestamp);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const formattedTimestamp = `${month}月${day}日${hours}:${minutes}`;
+  return formattedTimestamp;
+}
