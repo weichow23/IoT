@@ -31,15 +31,21 @@ export const Overall: React.FC = () => {
     const myPieChart = echarts.init(pieChartRef.current!);
     const myBarChart = echarts.init(barChartRef.current!);
     const myLineChart = echarts.init(lineChartRef.current!);
-
     drawPie(myPieChart);
     drawCalendar(myBarChart);
     drawLine(myLineChart);
+
+    const handleResize = () => {
+      myBarChart.resize();
+    };
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
       myPieChart.dispose();
       myBarChart.dispose();
       myLineChart.dispose();
+      window.removeEventListener('resize', handleResize);
     };
   }, [onlineDevice, offlineDevice, recentDay, barData, total, normal, alert]); // 这里依赖于可能变动的状态变量
 
@@ -72,7 +78,7 @@ export const Overall: React.FC = () => {
         emphasis: {
           label: {
             show: true,
-            fontSize: "20",
+            fontSize: "20%",
             fontWeight: "bold",
           },
         },
@@ -341,7 +347,7 @@ export const Overall: React.FC = () => {
           <Card hoverable style={{ marginTop: '5px', marginBottom: '5px' }}>
             <div
               ref={pieChartRef}
-              style={{ width: '100%', height: '400px', marginTop: '10px' }}
+              style={{ width: '100%', height: '400%', marginTop: '10px' }}
             ></div>
             <div style={{ textAlign: 'center', paddingTop: '5px' }}>
               设备在线情况
@@ -352,7 +358,7 @@ export const Overall: React.FC = () => {
           <Card hoverable style={{ marginTop: '5px', marginBottom: '5px' }}>
             <div
               ref={barChartRef}
-              style={{ width: '100%', height: '400px', marginTop: '10px' }}
+              style={{ width: '100%', height: '400%', marginTop: '10px' }}
             ></div>
             <div style={{ textAlign: 'center', paddingTop: '5px' }}>
               本月设备新增情况
@@ -365,7 +371,7 @@ export const Overall: React.FC = () => {
           <Card hoverable style={{ marginTop: '5px', marginBottom: '5px' }}>
             <div
               ref={lineChartRef}
-              style={{ width: '100%', height: '400px', marginTop: '10px' }}
+              style={{ width: '100%', height: '400%', marginTop: '10px' }}
             ></div>
             <div style={{ textAlign: 'center', paddingTop: '5px' }}>
               近一个月内接受消息情况

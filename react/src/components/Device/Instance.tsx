@@ -353,6 +353,7 @@ export const Instance = () => {
           pagination={{
             onChange: cancel,
           }}
+          scroll={{ x: 100 }}
         />
       </Form>
       <Button size="large"

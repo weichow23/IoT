@@ -1,6 +1,5 @@
 .layout {
     margin: 6% 12%;
-    //display: flex;
     flex-direction: column;
     align-items: center;
 }
@@ -12,4 +11,10 @@
 .login-button {
   display: block;  // 定义按钮为块级元素以便整行显示
   margin: 50px auto 0;
+}
+.customTable {
+  width: 100%;
+  margin: 0 auto; // 这会使表格在页面中居中
+  table-layout: auto; /* Allows the table to set column width based on content */
+  box-sizing: border-box;
 }

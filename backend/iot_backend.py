@@ -198,9 +198,7 @@ def selectDevice():
             return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
         devices = Device.query.filter(Device.user == user.name).filter(Device.name.ilike("%" + deviceName + "%")).all()
     else:
-        # 如果token_received为'root'，则返回所有设备
         devices = Device.query.filter(Device.name.ilike("%" + deviceName + "%")).all()
-
     result = {
         "verify": 0,
         "data": []
@@ -293,7 +291,6 @@ def deleteDevice():
 
 @app.route('/getRecentDevice', methods=['GET'])
 def getRecentDevice():
-
     count = [0] * 31
     token_received = request.args.get("token")
 

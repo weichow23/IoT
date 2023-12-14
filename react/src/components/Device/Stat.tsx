@@ -131,11 +131,11 @@ export const Stat: React.FC = () => {
   };
   return (
     <div>
-      <div style={{position: 'relative', marginBottom: 20, textAlign: 'center', display: deviceList.length ? 'block' : 'none'}}>
+      <div style={{position: 'relative', marginBottom: 20, textAlign: 'center', display: deviceList.length ? 'block' : 'none', width: '140%', left: '-20%'}}>
         请选择设备：
         <Select
           placeholder="请选择设备"
-          style={{width: 400, marginRight: 20}}
+          style={{ marginRight: 20}}
           onChange={handleSelectChange}
         >
           {deviceList.map((item: any) => (
@@ -147,10 +147,12 @@ export const Stat: React.FC = () => {
         <Button type="dashed" onClick={getMessage}>确定</Button>
       </div>
       <Table
+        className={styles.customTable}
         columns={columns}
         dataSource={messageList}
         pagination={pagination}
         onChange={handleTableChange}
+        scroll={{ x: 100 }}
       />
       <MapContainer center={[30.3, 120.4]} zoom={10.4} style={{height: "400px", width: "100%"}}>
         <TileLayer
