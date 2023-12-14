@@ -2,8 +2,8 @@
     padding: 0px 0px;
     outline: none;
     color: #000;
-    margin-right: 10px;
-    font-size:18px;
+    margin-right: 0.5%;
+    font-size:200%;
     &:hover {
         color: #0DADEA;
     }
@@ -13,12 +13,12 @@
   height: 70%;
   background-color: #f8f8f8;
   margin:auto;
-  margin-top: 100px;
+  margin-top: 5%;
   align-items: center;  /* 垂直居中 */
-  padding-left: 30px;
-  padding-right: 30px;
-  padding-top: 30px;
-  padding-bottom: 30px;
+  padding-left: 1.5%;
+  padding-right: 1.5%;
+  padding-top: 1.5%;
+  padding-bottom: 1.5%;
 }
 .login_head {
   display: flex;
@@ -26,12 +26,12 @@
   align-items: center;
 }
 .logo {
-  width: 60px;
-  height: 60px;
+  width: 10%;
+  height: 10%;
 }
 .title {
-  font-size:25px;
-  margin-left: 10px;
+  font-size:180%;
+  margin-left: 0.5%;
 }
 .login {
   width: 100%;
@@ -42,8 +42,8 @@
   min-height: 600px;
 }
 .login-button {
-  width: 120px;
+  width: 6%;
 }
 .register-button {
-  width: 120px;
+  width: 6%;
 }

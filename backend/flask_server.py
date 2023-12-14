@@ -1,10 +1,12 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from itsdangerous import TimedSerializer as Serializer
 from sqlalchemy import Integer
 from sqlalchemy.dialects.mysql import INTEGER
+from itsdangerous import TimedSerializer, BadSignature, SignatureExpired
 
-EXPIRATION = 3600  # 有效期(秒)
+EXPIRATION = 3600  # 有效期 3600s
+SECRET_KEY = os.environ.get('SECRET_KEY', 'default-secret-key')  # 从环境变量获取密钥
 
 UnsignedInt = Integer()
 UnsignedInt = UnsignedInt.with_variant(INTEGER(unsigned=True), 'mysql')
@@ -45,20 +47,23 @@ class Message(db.Model):
     lng = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
     value = db.Column(db.Integer, default=0, nullable=False)
-    userID = db.Column(db.Integer, default=0, nullable=False)
+    userId = db.Column(db.Integer, default=0, nullable=False)
 
 def create_token(api_user):
-    s = Serializer("secret-key")
+    s = TimedSerializer(SECRET_KEY)
     token = s.dumps({"id": api_user})
     if isinstance(token, bytes):
         token = token.decode()
     return token
 
 def verify_token(token):
-    s = Serializer("secret-key")
+    s = TimedSerializer(SECRET_KEY)
     try:
         data = s.loads(token, max_age=EXPIRATION)
-    except Exception:
+        user = User.query.get(data["id"])
+        return user
+    except BadSignature:
         return None
-    user = User.query.get(data["id"])
-    return user
+    except SignatureExpired:
+        return None
+

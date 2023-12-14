@@ -51,7 +51,7 @@ public class WorkerThread extends Thread {
                 // String formattedTimestamp = sdf.format(new Date(randomTimestamp));
                 // + ---------------------------------------- +
                 int value = rand.nextInt(100);
-                int userID = rand.nextInt(10);
+                int userId = rand.nextInt(10);
                 IOTMessage msg = new IOTMessage();
                 msg.setClientId(clientId);
                 msg.setInfo("Device Data " + sdf.format(now));
@@ -67,7 +67,7 @@ public class WorkerThread extends Thread {
                 msg.setLat(30.1 + rand.nextFloat() * 0.4);
                 //msg.setTimestamp(now.getTime());
                 msg.setTimestamp(randomTimestamp);
-                msg.setUserId(userID);
+                msg.setUserId(userId);
                 content = JSONObject.toJSONString(msg);
                 System.out.println("Publishing message: " + content);
                 MqttMessage message = new MqttMessage(content.getBytes());

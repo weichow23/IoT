@@ -84,17 +84,19 @@ root用户密码是root
 
 ## TODO
 
-后端代码改写降低查重率（mqttServer改好了已经）
+后端的iot_backend代码改写降低查重率
+
+报告写完
+
+然后试一下部署在网页上
 
 1. 使用 [Zeabur](https://zeabur.com/home/) 进行一站式、全自动的项目部署，且自带 CI/CD 和 SSL 证书
 
 2. 华为云学生端
 
+最后录一个视频
 
 
-使用文档写好了，再去改测试报告和录视频
-
-🙅‍2~~023年11月13日前提交**设计文档**，占20%最终总评成绩~~
 
 🙅‍2024年1月5日前提交： 
 
@@ -232,3 +234,80 @@ gantt
 
 ```
 
+# 关于docker打包
+
+我要如何把下列仓库https://github.com/Llux-C/IoT所示内容需要的环境(比如python， mysql， nodejs)一起用docker打包 已经知道我本地已经能正常运行该程序，我要如何把本地的环境用docker打包
+
+2 / 2
+
+ChatGPT
+
+ChatGPT
+
+要将一个项目及其所需环境（如Python、MySQL、Node.js等）使用Docker进行打包，您需要创建一个Dockerfile和一个docker-compose.yml文件（如果需要管理多个容器）。以下是基本步骤：
+
+### 1. 创建 Dockerfile
+
+Dockerfile 是一个文本文件，包含了从一个基础镜像创建新镜像的所有命令。您的项目需要Python、MySQL和Node.js，所以您可能需要创建多个 Dockerfile，每个针对一个特定的环境。例如，对于Python环境：
+
+```
+DockerfileCopy code# 使用Python官方镜像作为基础镜像
+FROM python:3.8
+
+# 设置工作目录
+WORKDIR /app
+
+# 将本地代码复制到容器内
+COPY . /app
+
+# 安装所需依赖
+RUN pip install -r requirements.txt
+
+# 运行应用
+CMD ["python", "./your-app.py"]
+```
+
+对于Node.js和MySQL，您可以类似地创建Dockerfile。
+
+### 2. 创建 docker-compose.yml
+
+当您需要同时运行多个容器时，docker-compose.yml 文件会非常有用。这个文件定义了如何运行您的服务。
+
+```
+yamlCopy codeversion: '3'
+services:
+  web:
+    build: ./path-to-your-nodejs-app
+    ports:
+      - "3000:3000"
+  python-app:
+    build: ./path-to-your-python-app
+    volumes:
+      - .:/app
+  db:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+```
+
+这个文件定义了三个服务：Node.js应用、Python应用和MySQL数据库。
+
+### 3. 构建和运行容器
+
+在拥有Dockerfile和docker-compose.yml文件后，您可以使用以下命令来构建和运行容器：
+
+```
+bashCopy code
+docker-compose up --build
+```
+
+这将根据Dockerfile中的指令构建镜像，并根据docker-compose.yml中的定义启动服务。
+
+### 注意事项
+
+- **依赖管理**：确保您的应用程序依赖在容器内被正确安装。
+- **环境变量**：如果您的应用程序需要环境变量，您需要在Dockerfile或docker-compose.yml文件中设置。
+- **端口映射**：确保docker-compose.yml文件中正确设置了端口映射，以便可以从外部访问容器内的应用程序。
+- **数据持久化**：对于数据库服务，您可能需要设置卷来持久化数据。
+
+在执行这些步骤时，您可能需要根据项目的具体需求做出调整。
