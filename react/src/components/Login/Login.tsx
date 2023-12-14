@@ -12,7 +12,7 @@ import { useUser } from '@/components/User/UserState'
 export const Login =  ({ onLoginSuccess }) => {
   const [tabKey, setTabKey] = useState('login');
   const [form] = Form.useForm();
-  const { dispatch } = useUser();
+  const {dispatch} = useUser();
   const [loginForm] = Form.useForm();
   const [registerForm] = Form.useForm();
   const [rootForm] = Form.useForm();
@@ -54,11 +54,11 @@ export const Login =  ({ onLoginSuccess }) => {
                 isRoot: false
               });
 
-              // 将 token 保存到 localStorage 并在 30 分钟后自动删除
+              // 将 token 保存到 localStorage 并在 60 分钟后自动删除
               localStorage.setItem('token', response.data.data);
               setTimeout(() => {
                 localStorage.removeItem('token');
-              }, 30 * 60 * 1000); // 30 minutes
+              }, 60 * 60 * 1000);
             } else {
               alert("登录失败！请重新登录");
             }

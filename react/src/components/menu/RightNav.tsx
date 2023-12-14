@@ -35,7 +35,8 @@ function RightNav(props: Props) {
   // token存在则自动登录，否则就退出; 管理员模式由于安全性的考虑不会自动保存登录状态
   React.useEffect(() => {
       const token = localStorage.getItem('token');
-      if (token && state.token) {
+      // if (token && state.token) {
+        if (token) {
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);

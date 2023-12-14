@@ -1,24 +1,35 @@
 import json
-from backend.flask_server import db, create_server, User, Device, Message
+import datetime
 from flask import request, jsonify
 from flask_cors import CORS
-import backend.flask_server as token
-import datetime
-from termcolor import cprint
+from backend.flask_server import db, create_server, User, Device, Message, create_token, verify_token
+from functools import wraps
 
 app = create_server()
 CORS(app)  # 为app应用启用CORS, 启用跨域同源
 
-def getRecentDay(days:int=31):
-    day_return = []
+def getRecentDay(days=31):
     today = datetime.datetime.today()
-    for i in range(0, days):
-        daytmp = today - datetime.timedelta(days=i)
-        dayt = daytmp.replace(hour=0, minute=0, second=0, microsecond=0)
-        dayt = datetime.datetime.date(dayt)
-        day_return.append(str(dayt)[5:])
-    day_return.reverse()
-    return day_return
+    return [(today - datetime.timedelta(days=i)).strftime("%m-%d") for i in range(days)][::-1]
+
+def make_response(verify, msg, data=None):
+    return jsonify(verify=verify, msg=msg, data=data)
+
+def token_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token_received = request.args.get('token') if request.method == 'GET' else json.loads(request.data).get('token')
+        if not token_received:
+            return make_response(-1, "No token provided!")
+        user = verify_token(token_received)
+        if user is None:
+            if token_received == 'root':
+                return make_response(1, "getSuccess!", 'root')
+            else:
+                return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
+        return f(user, *args, **kwargs)
+    return decorated_function
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -56,10 +67,10 @@ def tokenLogin():
     data = json.loads(request.data)
     token_received = data["token"]
     # print(token_received)
-    user = token.verify_token(token_received)
+    user = verify_token(token_received)
     if user is None:
-        return jsonify(verify=-1, msg="token is invalid!")
-    return jsonify(verify=0, msg="login success!", data=token_received)
+        return make_response(-1, "token is invalid!")
+    return make_response(0, "login success!", token_received)
 
 
 @app.route('/login', methods=['POST'])
@@ -67,55 +78,36 @@ def login():
     data = json.loads(request.data)
     password = data["password"]
     email = data["email"]
-    # print(email, password)
-    verify = 0
-    msg = "login success!"
     if email != 'root':
         user = User.query.filter(User.email == email).all()
         if user is None or not user:
-            verify = -1
-            msg = "Not exist the user!"
-            return jsonify(verify=verify, msg=msg)
-        # print(user)
+            return make_response(-1, '用户不存在')
         if user[0].password != password:
-            verify = -2
-            msg = "Password error!"
-            return jsonify(verify=verify, msg=msg)
-        token_back = token.create_token(user[0].id)
-        # print(token_back)
-        # print(type(token_back))
-        return jsonify(verify=verify, msg=msg, data=token_back)
+            return make_response(-2, '密码错误')
+        return make_response(0, "login success!", create_token(user[0].id))
     else:
         if password != '63a9f0ea7bb98050796b649e85481845':  # root对应的md5值
-            verify = -2
-            msg = "Password error!"
-        return jsonify(verify=verify, msg=msg, data='root')
+            return make_response(-2, '密码错误', 'root')
+        else:
+            return make_response(0, "login success!", 'root')
 
 
 @app.route('/getUser', methods=['GET'])
-def getUser():
-    token_received = request.args.get('token')
-    user = token.verify_token(token_received)
-    if user is None:
-        if token_received == 'root':
-            return jsonify(verify=1, msg="getSuccess!", data='root')
-        else:
-            return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
-    return jsonify(verify=0, msg="getSuccess!", data=user.name)
+@token_required
+def getUser(user):
+    return make_response(0, "getSuccess!", user.name)
 
 @app.route('/getAllUser', methods=['GET'])
 def getAllUser():
     users = User.query.all()
     user_list = []
-
     for user in users:
         user_data = {
             "name": user.name,
-            "token": token.create_token(user.id),  # Assuming the token can be recreated based on the user id
-            "password": user.password  # Note: It's a security concern to return actual passwords!
+            "token": create_token(user.id),
+            "password": user.password
         }
         user_list.append(user_data)
-
     return jsonify({"verify": 0, "users": user_list})
 
 
@@ -125,15 +117,15 @@ def alterPassword():
     token_received = data["token"]
     old_password = data["oldPsw"]
     new_password = data["newPsw"]
-    user = token.verify_token(token_received)
+    user = verify_token(token_received)
     # print(token_received)
     if user is None:
-        return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
+        return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
     if user.password != old_password:
-        return jsonify(verify=-2, msg="The old password is wrong!")
+        return make_response(-2, "原密码输入错误")
     user.password = new_password
     db.session.commit()
-    return jsonify(verify=0, msg="Alter Psw success!")
+    return make_response(0, "Alter Psw success!")
 
 
 @app.route('/alterName', methods=['POST'])
@@ -141,21 +133,18 @@ def alterName():
     data = json.loads(request.data)
     token_received = data["token"]
     new_name = data["newName"]
-
     tmp = User.query.filter(User.name == new_name).all()
     if len(tmp) != 0:
-        return jsonify(verify=-1, msg="不能改成这个名字!")
-    user = token.verify_token(token_received)
+        return make_response(-1, "不能改成这个名字!")
+    user = verify_token(token_received)
     if user is None:
-        return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
-
-    # 对设备的主人名称也要进行修改
-    devices = Device.query.filter(Device.user == user.name).all()
+        return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
+    devices = Device.query.filter(Device.user == user.name).all()  # 在设备中同步更改
     for device in devices:
         device.user = new_name
     user.name = new_name
     db.session.commit()
-    return jsonify(verify=0, msg="更改名字成功!")
+    return make_response(0, "更改名字成功!")
 
 
 @app.route('/getDevice', methods=['GET', 'POST'])
@@ -167,9 +156,9 @@ def getDevice():
         }
         token_received = request.args.get("token")
         if token_received != 'root':
-            user = token.verify_token(token_received)
+            user = verify_token(token_received)
             if user is None:
-                return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
+                return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
 
             devices = Device.query.filter(Device.user == user.name).all()
             for device in devices:
@@ -204,9 +193,9 @@ def selectDevice():
     deviceName = request.args.get("name")
 
     if token_received != 'root':
-        user = token.verify_token(token_received)
+        user = verify_token(token_received)
         if user is None:
-            return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
+            return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
         devices = Device.query.filter(Device.user == user.name).filter(Device.name.ilike("%" + deviceName + "%")).all()
     else:
         # 如果token_received为'root'，则返回所有设备
@@ -244,25 +233,25 @@ def alterDevice():
         if len(new_device) == 1 and new_device[0].id == deviceId:
             pass
         else:
-            return jsonify(verify=-1, msg="The newName has existed and it cannot be the same!")
-    user = token.verify_token(token_received)
+            return make_response(-1, "The newName has existed and it cannot be the same!")
+    user = verify_token(token_received)
     if user is None and token_received != 'root':
-        return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
+        return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
     device = Device.query.filter(Device.name == deviceOldName).all()
     device[0].clientId = clientId
     device[0].name = deviceNewName
     device[0].description = deviceDescription
     db.session.commit()
-    return jsonify(verify=0, msg="修改成功!")
+    return make_response(0, msg="修改成功!")
 
 
 @app.route('/createDevice', methods=['POST'])
 def createDevice():
     data = json.loads(request.data)
     token_received = data["token"]
-    user = token.verify_token(token_received)
+    user = verify_token(token_received)
     if user is None and token_received != 'root':
-        return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
+        return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
 
     deviceClientId = data["clientId"]
     deviceName = data["name"]
@@ -291,15 +280,15 @@ def createDevice():
 @app.route('/deleteDevice', methods=['GET'])
 def deleteDevice():
     token_received = request.args.get("token")
-    user = token.verify_token(token_received)
+    user = verify_token(token_received)
     if user is None and token_received != 'root':
-        return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
+        return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
     deviceName = request.args.get("name")
     devices = Device.query.filter(Device.name == deviceName).all()
     for device in devices:
         db.session.delete(device)
     db.session.commit()
-    return jsonify(verify=0, msg="删除设备成功!")
+    return make_response(0, "删除设备成功!")
 
 
 @app.route('/getRecentDevice', methods=['GET'])
@@ -314,9 +303,9 @@ def getRecentDevice():
         # 如果token_received为'root'，则返回所有设备
         devices = Device.query.all()
     else:
-        user = token.verify_token(token_received)
+        user = verify_token(token_received)
         if user is None:
-            return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
+            return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
         devices = Device.query.filter(Device.user == user.name).all()
 
     for device in devices:
@@ -331,7 +320,7 @@ def getRecentDevice():
 def getMessage():
     Id = request.args.get('clientId')
     token_received = request.args.get("token")
-    user = token.verify_token(token_received)
+    user = verify_token(token_received)
     if Id == 'root':# 如果clientId为'root'，则返回所有消息
         messages = Message.query.all()
     else:
@@ -367,9 +356,9 @@ def getRecentMessage():
         # 如果token_received为'root'，则返回所有消息
         messages = Message.query.all()
     else:
-        user = token.verify_token(token_received)
+        user = verify_token(token_received)
         if user is None:
-            return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
+            return make_response(-1, "用户信息不存在或者token失效，请重新登录!")
         # 只会返回UserId相同的
         # messages = Message.query.filter(user.id==Message.userId).all()
         user_devices = Device.query.filter(Device.user == user.name).all()
