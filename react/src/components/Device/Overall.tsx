@@ -86,7 +86,6 @@ export const Overall: React.FC = () => {
   chart.setOption(option);
 }
 
-  // TODO： 这里似乎还有点问题，不知道年份都是2001年而不是2010年，当改对注入后重新修改下列代码
   const getVirtualData = (year: number, month: number) => {
       const data: [string, number][] = [];
       recentDay.forEach((dateStr, index) => {
@@ -240,11 +239,11 @@ export const Overall: React.FC = () => {
         },
       })
       // console.log('Querying Token:', response.data.data);
-      if (!response.data || typeof response.data.code === 'undefined') {
+      if (!response.data || typeof response.data.verify === 'undefined') {
         console.error('Unexpected response format:', response.data)
         return
       }
-      if (response.data.code === 0) {
+      if (response.data.verify === 0) {
         const deviceList = response.data.data
         if (!Array.isArray(deviceList)) {
           console.error('Unexpected deviceList format:', deviceList)
@@ -253,11 +252,11 @@ export const Overall: React.FC = () => {
         let online = 0
         let offline = 0
         deviceList.forEach((device: any) => {
-          if (!device || typeof device.code !== 'string') {
+          if (!device || typeof device.clientId !== 'string') {
             console.error('Unexpected device format:', device)
             return
           }
-          if (device.code > 'device0000' && device.code < 'device0006') {
+          if (device.clientId > 'device0000' && device.clientId < 'device0006') {
             online += 1
           } else {
             offline += 1
@@ -266,7 +265,7 @@ export const Overall: React.FC = () => {
         setOnlineDevice(online)
         setOfflineDevice(offline)
       } else {
-        console.error('Error fetching devices code:', response.data.code, 'message:', (response.data.message || 'No error message provided'))
+        console.error('Error fetching devices clientId:', response.data.verify, 'message:', (response.data.message || 'No error message provided'))
       }
     } catch (error) {
       console.error('Error fetching devices:', error.toString())
@@ -289,16 +288,16 @@ export const Overall: React.FC = () => {
           token: state.token,
         },
       })
-      if (!response.data || typeof response.data.code === 'undefined') {
+      if (!response.data || typeof response.data.verify === 'undefined') {
         console.error('Unexpected response format:', response.data)
         return
       }
-      if (response.data.code === 0) {
+      if (response.data.verify === 0) {
         console.log(response.data.day)
         setRecentDay(response.data.day)
         setBarData(response.data.count)
       } else {
-        console.error('Error fetching recent devices, code:', response.data.code, 'message:', response.data.message || 'No error message provided')
+        console.error('Error fetching recent devices:', response.data.verify, 'message:', response.data.message || 'No error message provided')
       }
     } catch (error) {
       console.error('Error fetching recent devices:', error.toString())
@@ -315,16 +314,16 @@ export const Overall: React.FC = () => {
           token: state.token,
         },
       })
-      if (!response.data || typeof response.data.code === 'undefined') {
+      if (!response.data || typeof response.data.verify === 'undefined') {
         console.error('Unexpected response format:', response.data)
         return
       }
-      if (response.data.code === 0) {
+      if (response.data.verify === 0) {
         setTotal(response.data.total)
         setNormal(response.data.normal)
         setAlert(response.data.alert)
       } else {
-        console.error('Error fetching recent messages, code:', response.data.code, 'message:', response.data.message || 'No error message provided')
+        console.error('Error fetching recent messages:', response.data.verify, 'message:', response.data.message || 'No error message provided')
       }
     } catch (error) {
       console.error('Error fetching recent messages:', error.toString())
@@ -356,7 +355,7 @@ export const Overall: React.FC = () => {
               style={{ width: '100%', height: '400px', marginTop: '10px' }}
             ></div>
             <div style={{ textAlign: 'center', paddingTop: '5px' }}>
-              最近七天设备新增情况
+              本月设备新增情况
             </div>
           </Card>
         </Col>
@@ -369,7 +368,7 @@ export const Overall: React.FC = () => {
               style={{ width: '100%', height: '400px', marginTop: '10px' }}
             ></div>
             <div style={{ textAlign: 'center', paddingTop: '5px' }}>
-              最近七天接受消息情况
+              近一个月内接受消息情况
             </div>
           </Card>
         </Col>

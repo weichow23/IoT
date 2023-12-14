@@ -15,7 +15,8 @@ const EditableCell = ({
   children,
   ...restProps
 }) => {
-  const inputNode = <Input />;
+  // const inputNode = <Input />;
+  const inputNode = dataIndex === 'clientId' && editing ? <Input placeholder='你好' /> : <Input />;
   const { state } = useUser();
   // 禁止编辑以下列
   if(["id", "create_time", "operation", "delete"].includes(dataIndex)) {
@@ -56,7 +57,7 @@ export const Instance = () => {
   const [alterData, setAlterData] = useState({
     id: 0,
     name: '',
-    code: '',
+    clientId: '',
     description: '',
     time: '',
     oldName: '',
@@ -107,15 +108,15 @@ export const Instance = () => {
         },
       })
       // console.log('Querying Token:', response.data.data);
-      if (!response.data || typeof response.data.code === 'undefined') {
+      if (!response.data || typeof response.data.verify === 'undefined') {
         console.error('Unexpected response format:', response.data)
         return
       }
-      if (response.data.code === 0) {
+      if (response.data.verify === 0) {
         const deviceList = response.data.data
         setDeviceList(deviceList);
       } else {
-        console.error('Error fetching devices code:', response.data.code, 'message:', (response.data.message || 'No error message provided'))
+        console.error('Error fetching devices code:', response.data.verify, 'message:', (response.data.message || 'No error message provided'))
       }
     } catch (error) {
       console.error('Error fetching devices:', error.toString())
@@ -136,11 +137,11 @@ export const Instance = () => {
       const response = await axios.post('http://localhost:3790/createDevice', {
         token: state.token,
         name: values.name,
-        code: values.code,
+        clientId: values.clientId,
         description: values.description,
         user: state.username,
       });
-      if(response.data.code === 0) {
+      if(response.data.verify === 0) {
         getDevice();
         setVisibleCreate(false);
         window.location.reload();
@@ -158,12 +159,12 @@ export const Instance = () => {
       const response = await axios.post('http://localhost:3790/alterDevice', {
         id: id,
         token: state.token,
-        code: row.code,
+        clientId: row.clientId,
         newName: row.name,
         oldName: row.oldName,
         description: row.description,
       });
-      if(response.data.code === 0) {
+      if(response.data.verify === 0) {
           getDevice();  // 重新获取设备列表
           setVisibleAlter(false);  // 关闭修改的模态框
           setEditingId(''); // 退出编辑状态
@@ -217,9 +218,9 @@ export const Instance = () => {
                     token: state.token,
                 }
             });
-            if (response.data.code === 0) {
+            if (response.data.verify === 0) {
                 dispatch({ type: 'setUsername', payload: response.data.data });
-            } else if (response.data.code === 1){
+            } else if (response.data.verify === 1){
                 message.error("root 模式， 谨慎操作");
             } else {
                 message.error("获取用户信息失败，请重新登录！");
@@ -320,7 +321,7 @@ export const Instance = () => {
                 <Form.Item label="设备名称" name="name" rules={[{ required: true, message: '请输入设备名称!' }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item label="数据源" name="code" rules={[{ required: true, message: '请输入数据流!' }]}>
+                <Form.Item label="数据源" name="clientId" rules={[{ required: true, message: '请输入数据流(device000x)!' }]}>
                     <Input />
                 </Form.Item>
                 <Form.Item label="描述" name="description">

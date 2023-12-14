@@ -42,7 +42,7 @@ export const Login =  ({ onLoginSuccess }) => {
 
         axios.post('http://localhost:3790/login', { email:email, password: encryptedPassword })
           .then((response) => {
-            if(response.data.code === 0) {
+            if(response.data.verify === 0) {
               // 更新 context 中的用户数据
               dispatch({ type: 'setEmail', payload: response.data.email });
               dispatch({ type: 'setToken', payload: response.data.data });
@@ -88,7 +88,7 @@ export const Login =  ({ onLoginSuccess }) => {
         })
         .then((response) => {
           alert(response.data.msg); // Alert the message from server
-          if (response.data.code === 0) {
+          if (response.data.verify === 0) {
             location.reload();
           }
         })
@@ -101,7 +101,7 @@ export const Login =  ({ onLoginSuccess }) => {
        const rootpassword  = md5(values.rootpassword);
         axios.post('http://localhost:3790/login', { email:'root', password: rootpassword })
           .then((response) => {
-            if(response.data.code === 0) {
+            if(response.data.verify === 0) {
               dispatch({ type: 'setEmail', payload: response.data.data });
               dispatch({ type: 'setToken', payload: 'root' });
               onLoginSuccess({

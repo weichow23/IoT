@@ -13,7 +13,7 @@ db = SQLAlchemy()
 
 def create_server():
     server = Flask(__name__)
-    server.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:bsbs@localhost:3306/iot_app'
+    server.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:bsbs@localhost:3306/iot'
     server.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
     server.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     db.init_app(server)
@@ -29,7 +29,7 @@ class User(db.Model):
 class Device(db.Model):
     __tablename__ = 'device_info'
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    code = db.Column(db.String(128), default='', nullable=False)
+    clientId = db.Column(db.String(128), default='', nullable=False)
     name = db.Column(db.String(128), default='', nullable=False)
     description = db.Column(db.UnicodeText)
     create_time = db.Column(db.DateTime, nullable=False)
@@ -45,6 +45,7 @@ class Message(db.Model):
     lng = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
     value = db.Column(db.Integer, default=0, nullable=False)
+    userID = db.Column(db.Integer, default=0, nullable=False)
 
 def create_token(api_user):
     s = Serializer("secret-key")

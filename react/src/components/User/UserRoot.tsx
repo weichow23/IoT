@@ -61,7 +61,7 @@ export const UserRoot = ({onLogout }) => {
       newPsw: md5(values.password), // 使用password作为字段名
       token: record.token,
     });
-    if (response.data.code === 0) {
+    if (response.data.verify === 0) {
       message.success("修改成功");
       setEditingId('');
     } else {
@@ -78,7 +78,7 @@ export const UserRoot = ({onLogout }) => {
     const fetchUsers = async () => {
         try {
             const response = await axios.get('http://localhost:3790/getAllUser');
-            if (response.data.code === 0) {
+            if (response.data.verify === 0) {
                 // 分割 token 字段
                 const formattedData = response.data.users.map(user => {
                     const [idPart, tokenPart] = user.token.split('}.');

@@ -11,4 +11,5 @@ public class IOTMessage {
     private double lng;
     private double lat;
     private long timestamp;
+    private int userId;
 }

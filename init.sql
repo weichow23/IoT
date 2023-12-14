@@ -1,15 +1,15 @@
-create database iot_app;
+create database iot;
 
-use iot_app;
+use iot;
 
 create table device_info
 (
     id          int unsigned auto_increment primary key,
-    code        varchar(128) default '' not null,
+    user		varchar(128) default '' not null,
+    clientId        varchar(128) default '' not null,
     name        varchar(128) default '' not null,
-    description text,
-    create_time datetime     default CURRENT_TIMESTAMP not null,
-    user		varchar(128) default '' not null
+    description varchar(128),
+    create_time datetime     default CURRENT_TIMESTAMP not null
 );
 
 create table device_message
@@ -21,19 +21,22 @@ create table device_message
     lat		  float 		default 0.0000            not null,
     lng		  float			default 0.0000            not null,
     timestamp datetime      default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
-    value     int           default 0                 not null
-)charset = utf8;
+    value     int           default 0                 not null,
+    userId    int           default 0                 not null
+)charset = utf8; 
 
-create table user_info
+CREATE TABLE user_info
 (
-    id       int unsigned auto_increment	primary key,
-    name     varchar(128) default '' not null,
-    password varchar(128) default '' not null,
-    email    varchar(128) default '' not null
+    id       INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email    VARCHAR(128) DEFAULT '' NOT NULL UNIQUE,
+    name     VARCHAR(128) DEFAULT '' NOT NULL UNIQUE,
+    password VARCHAR(128) DEFAULT '' NOT NULL
 );
-GRANT ALL PRIVILEGES ON iot_app.* TO 'root'@'localhost';
+
+GRANT ALL PRIVILEGES ON iot.* TO 'root'@'localhost';
 
 -- show databases;
--- use iot_app;
+-- use iot;
 -- show tables;
 -- DESCRIBE device_info;
+-- DROP DATABASE iot;

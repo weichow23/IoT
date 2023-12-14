@@ -8,16 +8,17 @@ import { Select, Button, Table, Tag, Pagination } from 'antd';
 <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak='Ur6D7GxIvSY4eegG2qw9Ukr2UhNneZxt'"></script>
 import { useUser } from '@/components/User/UserState';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
-import L from 'leaflet';
+import L, {Browser} from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationDot } from '@fortawesome/free-solid-svg-icons';
 import { renderToString } from 'react-dom/server'
+import safari = Browser.safari;
 
 export const Stat: React.FC = () => {
   const [deviceList, setDeviceList] = useState([]);
   const [messageList, setMessageList] = useState([]);
-  const [selectCode, setSelectCode] = useState("");
+  const [selectClientId, setSelectClientId] = useState("");
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 5,
@@ -73,12 +74,12 @@ export const Stat: React.FC = () => {
   useEffect(() => {
     const timer = setInterval(getMessage, 3000);
     return () => clearInterval(timer);
-  }, [selectCode]);
+  }, [selectClientId]);
 
   const getDevice = async () => {
     try {
       const res = await axios.get("http://localhost:3790/getDevice", { params: { token: state.token }});
-      if (res.data.code === 0) {
+      if (res.data.verify === 0) {
         setDeviceList(res.data.data);
       } else {
         console.log("获取设备失败");
@@ -90,8 +91,8 @@ export const Stat: React.FC = () => {
 
   const getMessage = async () => {
     try {
-      const res = await axios.get("http://localhost:3790/getMessage", { params: { clientId: selectCode } });
-      if (res.data.code === 0) {
+      const res = await axios.get("http://localhost:3790/getMessage", { params: { clientId: selectClientId, token: state.token } });
+      if (res.data.verify === 0) {
         setMessageList(res.data.data);
         // const data = res.data.data.map((item: any) => ({ lat: item.lat, lng: item.lng }));
         // setPolylinePath(data);
@@ -111,7 +112,7 @@ export const Stat: React.FC = () => {
   };
 
   const handleSelectChange = (value: string) => {
-    setSelectCode(value);
+    setSelectClientId(value);
   };
 
   const handleTableChange = (pagination: any) => {
@@ -138,7 +139,7 @@ export const Stat: React.FC = () => {
           onChange={handleSelectChange}
         >
           {deviceList.map((item: any) => (
-            <Select.Option key={item.id} value={item.code}>
+            <Select.Option key={item.id} value={item.clientId}>
               {item.name}
             </Select.Option>
           ))}

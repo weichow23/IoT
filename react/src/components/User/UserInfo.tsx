@@ -28,7 +28,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
                     token: state.token,
                 }
             });
-            if (response.data.code === 0 || response.data.code === 1)  {
+            if (response.data.verify === 0 || response.data.verify === 1)  {
                 setNickname(response.data.data);
                 dispatch({ type: 'setUsername', payload: response.data.data });
             } else {
@@ -49,7 +49,7 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
         token: state.token,
       });
 
-      if (response.data.code === 0) {
+      if (response.data.verify === 0) {
         message.success(response.data.msg);
       } else {
         message.error("修改失败");
@@ -75,9 +75,9 @@ export const UserInfo: React.FC<UserProps> = ({ }) => {
         token: state.token,
       });
 
-      if (response.data.code === 0) {
+      if (response.data.verify === 0) {
         message.success("修改成功");
-      } else if (response.data.code === -2) {
+      } else if (response.data.verify === -2) {
         message.error("旧密码错误");
       } else {
         message.error("修改失败");
