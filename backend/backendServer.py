@@ -9,6 +9,17 @@ from termcolor import cprint
 app = create_server()
 CORS(app)  # 为app应用启用CORS, 启用跨域同源
 
+def getRecentDay(days:int=31):
+    day_return = []
+    today = datetime.datetime.today()
+    for i in range(0, days):
+        daytmp = today - datetime.timedelta(days=i)
+        dayt = daytmp.replace(hour=0, minute=0, second=0, microsecond=0)
+        dayt = datetime.datetime.date(dayt)
+        day_return.append(str(dayt)[5:])
+    day_return.reverse()
+    return day_return
+
 @app.route('/register', methods=['POST'])
 def register():
     data = json.loads(request.data)
@@ -115,6 +126,7 @@ def alterPassword():
     old_password = data["oldPsw"]
     new_password = data["newPsw"]
     user = token.verify_token(token_received)
+    print(token_received)
     if user is None:
         return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
     if user.password != old_password:
@@ -271,18 +283,17 @@ def createDevice():
             return result
         new_id = device.id
     # 插入
-    new_device = Device(id=new_id + 1, verify=deviceClientId, name=deviceName, description=deviceDescription,
+    new_device = Device(id=new_id + 1, clientId=deviceClientId, name=deviceName, description=deviceDescription,
                         create_time=datetime.datetime.now(), user=deviceUser)
     db.session.add(new_device)
     db.session.commit()
     return result
 
-
 @app.route('/deleteDevice', methods=['GET'])
 def deleteDevice():
     token_received = request.args.get("token")
     user = token.verify_token(token_received)
-    if user is None or token_received != 'root':
+    if user is None and token_received != 'root':
         return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
     deviceName = request.args.get("name")
     devices = Device.query.filter(Device.name == deviceName).all()
@@ -294,9 +305,11 @@ def deleteDevice():
 
 @app.route('/getRecentDevice', methods=['GET'])
 def getRecentDevice():
-    day_return = []
-    count = [0, 0, 0, 0, 0, 0, 0]
+
+    count = [0] * 31
     token_received = request.args.get("token")
+
+    day_return = getRecentDay()
 
     if token_received == 'root':
         # 如果token_received为'root'，则返回所有设备
@@ -305,14 +318,6 @@ def getRecentDevice():
         user = token.verify_token(token_received)
         if user is None:
             return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
-
-        today = datetime.datetime.today()
-        for i in range(0, 31):
-            daytmp = today - datetime.timedelta(days=i)
-            dayt = daytmp.replace(hour=0, minute=0, second=0, microsecond=0)
-            dayt = datetime.datetime.date(dayt)
-            day_return.append(str(dayt)[5:])
-        day_return.reverse()
         devices = Device.query.filter(Device.user == user.name).all()
 
     for device in devices:
@@ -354,10 +359,10 @@ def getMessage():
 
 @app.route("/getRecentMessage", methods=['GET'])
 def getRecentMessage():
-    day_return = []
-    total = [0, 0, 0, 0, 0, 0, 0]
-    normal = [0, 0, 0, 0, 0, 0, 0]
-    alert = [0, 0, 0, 0, 0, 0, 0]
+    day_return = getRecentDay()
+    total = [0] * 31
+    normal = [0] * 31
+    alert = [0] * 31
     token_received = request.args.get("token")
 
     if token_received == 'root':
@@ -367,25 +372,17 @@ def getRecentMessage():
         user = token.verify_token(token_received)
         if user is None:
             return jsonify(verify=-1, msg="用户信息不存在或者token失效，请重新登录!")
-        today = datetime.datetime.today()
-        # 获取过去七天的日期并转化成字符串
-        for i in range(0, 7):
-            daytmp = today - datetime.timedelta(days=i)
-            dayt = daytmp.replace(hour=0, minute=0, second=0, microsecond=0)
-            dayt = datetime.datetime.date(dayt)
-            day_return.append(str(dayt)[5:])
-        day_return.reverse()
         # 只会返回UserID相同的
         # messages = Message.query.filter(user.id==Message.userID).all()
         user_devices = Device.query.filter(Device.user == user.name).all()
-        user_device_ids = [device.clientID for device in user_devices]
+        user_device_ids = [device.clientId for device in user_devices]
 
         # 只返回符合条件的消息
         messages = Message.query.filter(
             Message.userID == user.id,
-            Message.clientID.in_(user_device_ids)
+            Message.clientId.in_(user_device_ids)
         ).all()
-
+    print('mcgill ', messages)
     for message in messages:
         message_day = str(datetime.datetime.date(message.timestamp))[5:]
         for i in range(len(day_return)):
@@ -395,7 +392,7 @@ def getRecentMessage():
                     normal[i] += 1
                 else:
                     alert[i] += 1
-    print(day_return, total, normal, alert)
+    # print(day_return, total, normal, alert)
     return jsonify(verify=0, msg="getRMsuccess!", day=day_return, total=total, alert=alert, normal=normal)
 
 if __name__ == '__main__':

@@ -52,23 +52,23 @@ export const UserRoot = ({onLogout }) => {
     setEditingId(record.id);
 };
 
-
   const handleSavePassword = async (record) => {
   try {
     const values = await form.validateFields();
+    const combinedString = `{"id": ${record.id}}.${record.token}`;
     const response = await axios.post('http://localhost:3790/alterPassword', {
-      oldPsw: md5(record.password),
+      oldPsw: record.password,
       newPsw: md5(values.password), // 使用password作为字段名
-      token: record.token,
+      token: combinedString,
     });
     if (response.data.verify === 0) {
       message.success("修改成功");
       setEditingId('');
     } else {
-      message.error("修改失败");
+      message.error("修改失败" + response.data.msg);
     }
   } catch (error) {
-    message.error("修改失败");
+    message.error("修改失败，请刷新");
   }
 };
 

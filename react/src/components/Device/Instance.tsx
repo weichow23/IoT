@@ -92,6 +92,7 @@ export const Instance = () => {
       const row = await form.validateFields();
       const currentDevice = deviceList.find(device => device.id === id); // 根据id找到当前设备
       row.oldName = currentDevice.name;
+      row.clientId = currentDevice.clientId;
       handleAlterSubmit(row, id);
     } catch (err) {
       console.log('Validate Failed:', err);
@@ -133,12 +134,14 @@ export const Instance = () => {
   }
   const showCreateModal = () => setVisibleCreate(true);
   const handleCreateSubmit = async (values) => {
+      // console.log(values);
+      const description = values.description !== undefined ? values.description : '';
     try {
       const response = await axios.post('http://localhost:3790/createDevice', {
         token: state.token,
         name: values.name,
         clientId: values.clientId,
-        description: values.description,
+        description: description,
         user: state.username,
       });
       if(response.data.verify === 0) {
@@ -149,12 +152,13 @@ export const Instance = () => {
         message.error('设备添加失败: ' + response.data.msg);
       }
     } catch (err) {
-      console.error(err);
-      message.error('添加设备失败，请检查网络连接。');
+      message.error('添加设备失败');
     }
   };
   const handleAlterSubmit = async (row, id) => {
-      console.log(id, row, alterData);
+      // console.log(id, row, alterData);
+      console.log(row.clientId);
+      const description = row.description !== undefined ? row.description : '';
     try {
       const response = await axios.post('http://localhost:3790/alterDevice', {
         id: id,
@@ -162,7 +166,7 @@ export const Instance = () => {
         clientId: row.clientId,
         newName: row.name,
         oldName: row.oldName,
-        description: row.description,
+        description: description,
       });
       if(response.data.verify === 0) {
           getDevice();  // 重新获取设备列表
@@ -172,14 +176,13 @@ export const Instance = () => {
           message.error('设备修改失败: ' + response.data.msg);
         }
     } catch (err) {
-      console.error(err);
-      message.error('修改设备失败，请检查网络连接。');
+      message.error('修改设备失败');
     }
   };
   const deleteDevice = async (deviceName: string) => {
     Modal.confirm({
-      title: '您确定删除该设备吗',
-      content: '删除了不可恢复哦~',
+      title: '确定删除该设备吗？',
+      content: '',
       okText: '确认',
       okType: 'danger',
       cancelText: '取消',
@@ -321,7 +324,7 @@ export const Instance = () => {
                 <Form.Item label="设备名称" name="name" rules={[{ required: true, message: '请输入设备名称!' }]}>
                     <Input />
                 </Form.Item>
-                <Form.Item label="数据源" name="clientId" rules={[{ required: true, message: '请输入数据流(device000x)!' }]}>
+                <Form.Item label="数据源" name="clientId" rules={[{ required: true, message: '请输入数据源(device000x)!' }]}>
                     <Input />
                 </Form.Item>
                 <Form.Item label="描述" name="description">
