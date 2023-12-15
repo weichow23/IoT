@@ -236,12 +236,6 @@ gantt
 
 我要如何把下列仓库https://github.com/Llux-C/IoT所示内容需要的环境(比如python， mysql， nodejs)一起用docker打包 已经知道我本地已经能正常运行该程序，我要如何把本地的环境用docker打包
 
-2 / 2
-
-ChatGPT
-
-ChatGPT
-
 要将一个项目及其所需环境（如Python、MySQL、Node.js等）使用Docker进行打包，您需要创建一个Dockerfile和一个docker-compose.yml文件（如果需要管理多个容器）。以下是基本步骤：
 
 ### 1. 创建 Dockerfile

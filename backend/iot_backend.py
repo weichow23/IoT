@@ -9,13 +9,46 @@ app = create_server()
 CORS(app)  # 为app应用启用CORS, 启用跨域同源
 
 def getRecentDay(days=31):
+    """
+    获取最近一段时间内的日期列表
+    Args:
+        days (int, optional): 需要获取的天数，默认为31天。
+
+    Returns:
+        list: 包含日期字符串的列表，日期格式为"%m-%d"（例如："12-15"）。
+    """
     today = datetime.datetime.today()
     return [(today - datetime.timedelta(days=i)).strftime("%m-%d") for i in range(days)][::-1]
 
 def make_response(verify, msg, data=None):
+    """
+    创建一个通用的响应字典，用于API返回。
+
+    Args:
+        verify (int): 表示操作是否成功的布尔值，True 表示成功，False 表示失败。
+        msg (str): 与响应相关的消息，通常用于描述操作结果或错误信息。
+        data (any, optional): 可选的数据，包含响应的附加信息。默认为None。
+
+    Returns:
+        dict: 包含响应信息的字典，具有以下结构：
+        {
+            'verify': bool,  # 操作是否成功
+            'msg': str,      # 相关消息
+            'data': any      # 可选的附加数据
+        }
+    """
     return jsonify(verify=verify, msg=msg, data=data)
 
 def token_required(f):
+    """
+        装饰器函数，用于验证请求是否包含有效的身份验证令牌，并将验证后的用户传递给被装饰的视图函数。
+
+        Args:
+            f (function): 被装饰的视图函数，应接受用户对象作为第一个参数。
+
+        Returns:
+            function: 被装饰后的函数，用于验证令牌并调用原始视图函数。
+        """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         token_received = request.args.get('token') if request.method == 'GET' else json.loads(request.data).get('token')
@@ -33,6 +66,16 @@ def token_required(f):
 
 @app.route('/register', methods=['POST'])
 def register():
+    """
+    处理用户注册的路由。
+
+    Returns:
+        dict: 包含注册结果的响应字典，具有以下结构：
+        {
+            'verify': int,  # 注册验证结果，0 表示成功，-1 表示失败
+            'msg': str      # 相关消息
+        }
+    """
     data = json.loads(request.data)
     name = data['name']
     password = data['password']
@@ -64,6 +107,17 @@ def register():
 
 @app.route('/tokenLogin', methods=['POST'])
 def tokenLogin():
+    """
+    处理用户使用令牌进行登录的路由。
+
+    Returns:
+        dict: 包含登录结果的响应字典，具有以下结构：
+        {
+            'verify': int,  # 登录验证结果，0 表示成功，-1 表示失败
+            'msg': str,      # 相关消息
+            'data': any      # 可选的附加数据（令牌）
+        }
+    """
     data = json.loads(request.data)
     token_received = data["token"]
     # print(token_received)
@@ -75,6 +129,17 @@ def tokenLogin():
 
 @app.route('/login', methods=['POST'])
 def login():
+    """
+       处理用户登录的路由。
+
+       Returns:
+           dict: 包含登录结果的响应字典，具有以下结构：
+           {
+               'verify': int,  # 登录验证结果，0 表示成功，-1 表示用户不存在，-2 表示密码错误
+               'msg': str,      # 相关消息
+               'data': any      # 可选的附加数据（令牌或'root'）
+           }
+       """
     data = json.loads(request.data)
     password = data["password"]
     email = data["email"]
@@ -95,10 +160,34 @@ def login():
 @app.route('/getUser', methods=['GET'])
 @token_required
 def getUser(user):
+    """
+    获取用户信息的路由。
+
+    Args:
+        user (User): 经过身份验证的用户对象。
+
+    Returns:
+        dict: 包含用户信息的响应字典，具有以下结构：
+        {
+            'verify': int,  # 获取用户信息结果，0 表示成功，-1 表示失败
+            'msg': str,      # 相关消息
+            'data': any      # 用户信息
+        }
+    """
     return make_response(0, "getSuccess!", user.name)
 
 @app.route('/getAllUser', methods=['GET'])
 def getAllUser():
+    """
+    获取所有用户信息的路由。
+
+    Returns:
+        dict: 包含所有用户信息的响应字典，具有以下结构：
+        {
+            'verify': int,       # 获取用户信息结果，0 表示成功，-1 表示失败
+            'users': list[dict]  # 包含用户信息字典的列表
+        }
+    """
     users = User.query.all()
     user_list = []
     for user in users:
@@ -113,6 +202,16 @@ def getAllUser():
 
 @app.route('/alterPassword', methods=['POST'])
 def alterPassword():
+    """
+    处理用户修改密码的路由。
+
+    Returns:
+        dict: 包含密码修改结果的响应字典，具有以下结构：
+        {
+            'verify': int,  # 密码修改结果，0 表示成功，-1 表示用户信息不存在或token失效，-2 表示原密码输入错误
+            'msg': str      # 相关消息
+        }
+    """
     data = json.loads(request.data)
     token_received = data["token"]
     old_password = data["oldPsw"]
@@ -130,6 +229,16 @@ def alterPassword():
 
 @app.route('/alterName', methods=['POST'])
 def alterName():
+    """
+    处理用户修改用户名的路由。
+
+    Returns:
+        dict: 包含修改用户名结果的响应字典，具有以下结构：
+        {
+            'verify': int,  # 修改用户名结果，0 表示成功，-1 表示用户信息不存在或token失效，-2 表示新用户名已存在
+            'msg': str      # 相关消息
+        }
+    """
     data = json.loads(request.data)
     token_received = data["token"]
     new_name = data["newName"]
@@ -149,6 +258,16 @@ def alterName():
 
 @app.route('/getDevice', methods=['GET', 'POST'])
 def getDevice():
+    """
+    获取设备信息的路由。
+
+    Returns:
+        dict: 包含设备信息的响应字典，具有以下结构：
+        {
+            'verify': int,      # 获取设备信息结果，0 表示成功，-1 表示用户信息不存在或token失效
+            'data': list[dict]  # 包含设备信息字典的列表
+        }
+    """
     if request.method == 'GET':
         result = {
             "verify": 0,
@@ -189,6 +308,16 @@ def getDevice():
 
 @app.route('/selectDevice', methods=['GET'])
 def selectDevice():
+    """
+    根据设备名称查询设备信息的路由。
+
+    Returns:
+        dict: 包含设备信息的响应字典，具有以下结构：
+        {
+            'verify': int,      # 查询设备信息结果，0 表示成功，-1 表示用户信息不存在或token失效
+            'data': list[dict]  # 包含设备信息字典的列表
+        }
+    """
     token_received = request.args.get("token")
     deviceName = request.args.get("name")
 
@@ -215,10 +344,18 @@ def selectDevice():
         result.get("data").append(dev)
     return jsonify(result)
 
-
-
 @app.route('/alterDevice', methods=['POST'])
 def alterDevice():
+    """
+    处理修改设备信息的路由。
+
+    Returns:
+        dict: 包含设备修改结果的响应字典，具有以下结构：
+        {
+            'verify': int,  # 设备修改结果，0 表示成功，-1 表示设备名称已存在或用户信息不存在或token失效
+            'msg': str      # 相关消息
+        }
+    """
     data = json.loads(request.data)
     token_received = data["token"]
     clientId = data["clientId"]
@@ -245,6 +382,16 @@ def alterDevice():
 
 @app.route('/createDevice', methods=['POST'])
 def createDevice():
+    """
+    处理创建设备的路由。
+
+    Returns:
+        dict: 包含设备创建结果的响应字典，具有以下结构：
+        {
+            'verify': int,  # 设备创建结果，0 表示成功，-1 表示设备名称已存在或用户信息不存在或token失效
+            'msg': str      # 相关消息
+        }
+    """
     data = json.loads(request.data)
     token_received = data["token"]
     user = verify_token(token_received)
@@ -277,6 +424,16 @@ def createDevice():
 
 @app.route('/deleteDevice', methods=['GET'])
 def deleteDevice():
+    """
+    处理删除设备的路由。
+
+    Returns:
+        dict: 包含删除设备结果的响应字典，具有以下结构：
+        {
+            'verify': int,  # 删除设备结果，0 表示成功，-1 表示用户信息不存在或token失效
+            'msg': str      # 相关消息
+        }
+    """
     token_received = request.args.get("token")
     user = verify_token(token_received)
     if user is None and token_received != 'root':
@@ -291,6 +448,18 @@ def deleteDevice():
 
 @app.route('/getRecentDevice', methods=['GET'])
 def getRecentDevice():
+    """
+    获取近期设备创建统计信息的路由。
+
+    Returns:
+        dict: 包含近期设备创建统计信息的响应字典，具有以下结构：
+        {
+            'verify': int,      # 获取设备创建统计信息结果，0 表示成功，-1 表示用户信息不存在或token失效
+            'msg': str,          # 相关消息
+            'day': list[str],   # 日期列表
+            'count': list[int]  # 设备创建数量列表
+        }
+    """
     count = [0] * 31
     token_received = request.args.get("token")
 
@@ -315,6 +484,16 @@ def getRecentDevice():
 
 @app.route('/getMessage', methods=['GET'])
 def getMessage():
+    """
+    获取消息信息的路由。
+
+    Returns:
+        dict: 包含消息信息的响应字典，具有以下结构：
+        {
+            'verify': int,      # 获取消息信息结果，0 表示成功，-1 表示用户信息不存在或token失效
+            'data': list[dict]  # 包含消息信息字典的列表
+        }
+    """
     Id = request.args.get('clientId')
     token_received = request.args.get("token")
     user = verify_token(token_received)
@@ -343,6 +522,20 @@ def getMessage():
 
 @app.route("/getRecentMessage", methods=['GET'])
 def getRecentMessage():
+    """
+    获取近期消息统计信息的路由。
+
+    Returns:
+        dict: 包含近期消息统计信息的响应字典，具有以下结构：
+        {
+            'verify': int,      # 获取消息统计信息结果，0 表示成功，-1 表示用户信息不存在或token失效
+            'msg': str,          # 相关消息
+            'day': list[str],   # 日期列表
+            'total': list[int],  # 总消息数量列表
+            'alert': list[int],  # 异常消息数量列表
+            'normal': list[int]  # 正常消息数量列表
+        }
+    """
     day_return = getRecentDay()
     total = [0] * 31
     normal = [0] * 31
