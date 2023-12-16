@@ -3,9 +3,11 @@ import paho.mqtt.client as mqtt
 import re
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+import os
 
 # 连接数据库
-engine = create_engine("mysql+pymysql://root:bsbs@localhost:3306/iot") # 数据库类型 + 数据库驱动器://用户名:密码@地址:端口/数据库名
+db_host = os.getenv('DB_HOST', 'localhost')
+engine = create_engine(f"mysql+pymysql://root:bsbs@{db_host}:3306/iot") # 数据库类型 + 数据库驱动器://用户名:密码@地址:端口/数据库名
 Session = sessionmaker(bind=engine)
 
 def process_message(message):
@@ -42,9 +44,11 @@ def on_message(client, userdata, msg):
     print(payload)
     process_message(payload)
 
+mqtt_host = os.getenv('MQTT_HOST', '127.0.0.1') # 已经验证本地运行无误
+
 # 启用MQTT客户端
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
-client.connect(host="127.0.0.1", port=1883, keepalive=60)
+client.connect(host=mqtt_host, port=1883, keepalive=60)
 client.loop_forever()

@@ -28,12 +28,19 @@ create table device_message
 CREATE TABLE user_info
 (
     id       INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    email    VARCHAR(128) DEFAULT '' NOT NULL UNIQUE,
-    name     VARCHAR(128) DEFAULT '' NOT NULL UNIQUE,
-    password VARCHAR(128) DEFAULT '' NOT NULL
+    email    VARCHAR(128) DEFAULT '' not null UNIQUE,
+    name     VARCHAR(128) DEFAULT '' not null UNIQUE,
+    password VARCHAR(128) DEFAULT '' not null
 );
 
 GRANT ALL PRIVILEGES ON iot.* TO 'root'@'localhost';
+FLUSH PRIVILEGES;
+
+-- FLUSH PRIVILEGES;
+-- show tables;
+-- DROP USER 'A'@'%';
+
+-- GRANT ALL PRIVILEGES ON iot.* TO 'root'@'%';
 
 -- show databases;
 -- use iot;

@@ -15,7 +15,10 @@ db = SQLAlchemy()
 
 def create_server():
     server = Flask(__name__)
-    server.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:bsbs@localhost:3306/iot'
+
+    db_host = os.getenv('DB_HOST', 'localhost')
+    server.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://root:bsbs@{db_host}:3306/iot'
+
     server.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
     server.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     db.init_app(server)

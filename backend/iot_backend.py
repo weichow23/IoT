@@ -2,7 +2,7 @@ import json
 import datetime
 from flask import request, jsonify
 from flask_cors import CORS
-from backend.flask_server import db, create_server, User, Device, Message, create_token, verify_token
+from flask_server import db, create_server, User, Device, Message, create_token, verify_token
 from functools import wraps
 
 app = create_server()

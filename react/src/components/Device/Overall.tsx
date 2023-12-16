@@ -215,7 +215,7 @@ export const Overall: React.FC = () => {
       },
       series: [
         {
-          name: '总消息',
+          name: '正常消息',
           type: 'line',
           stack: '总量',
           data: total,
@@ -227,7 +227,7 @@ export const Overall: React.FC = () => {
           data: alert,
         },
         {
-          name: '正常消息',
+          name: '总消息',
           type: 'line',
           stack: '总量',
           data: normal,
