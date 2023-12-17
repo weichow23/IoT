@@ -1,5 +1,7 @@
 # IoT 物联网设备管理平台
 
+http://150.158.11.134:3002/ 可以直接进行访问！
+
 <img src="report/demo.png" style="zoom:60%;" />
 
 ## 前端
@@ -82,15 +84,19 @@ root用户密码是root
 
 
 
+
+
+
+
 ## TODO
 
-然后试一下部署在网页上或者Docker打包
-
-1. 使用 [Zeabur](https://zeabur.com/home/) 进行一站式、全自动的项目部署，且自带 CI/CD 和 SSL 证书
-
-2. 华为云学生端
+把readme整理下，报告重写
 
 最后录一个视频
+
+
+
+目前本地的2G的docker能够正常运行(打包加上去)，服务器也可以正常用
 
 
 
@@ -98,7 +104,7 @@ root用户密码是root
 
 1、程序代码和实验报告。 
 
-2、**制作一个docker容器，包含运行网站所需的软件** （docker只能运行一个软件，不知道这个什么意思）
+2、制作一个docker容器
 
 3、录制一个功能演示的操作视频
 
@@ -231,121 +237,20 @@ gantt
 ```
 
 ```shell
-
 docker volume rm iot_db-data
 docker-compose up -d
-
 # 重新生成
 docker-compose down
+rmi 和 rm -f对应的容器和镜像
 docker-compose up -d --build
 
-
-
-
 docker save -o E:\IoT iot-java
-
-sudo lsof -i :3002
 ```
 
+3002接口问题
 
-
-接口问题
-
-```
+```shell
 net stop WinNAT
-```
-
-```
 net start WinNAT
 ```
-
-
-
-我有一个服务器150.158.11.134，我通过docker部署了如下程序，为什么我不能通过150.158.11.134:3002访问网页？
-
-已经知道我有docker-compose.yml内容如下,我用docker-compose up -d生成并运行了容器
-
-```
-version: '3'
-services:
-  mysql:
-    container_name: mysql3790
-    image: mysql:latest
-    ports:
-      - "3307:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: bsbs
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - db-data:/var/lib/mysql
-
-  mqtt:
-    container_name: mqtt3790
-    image: eclipse-mosquitto:latest
-    ports:
-      - "1883:1883"
-    volumes:
-      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
-
-  python:
-    container_name: python3790
-    build:
-      context: ./backend
-    ports:
-      - "3790:3790"
-    environment:
-      - DB_HOST=mysql3790
-      - MQTT_HOST=mqtt3790
-    depends_on:
-      - mysql
-      - mqtt
-
-  java:
-    container_name: java3790
-    build:
-      context: ./client
-    ports:
-      - "8080:8080"
-    environment:
-      - MQTT_HOST=tcp://mqtt3790:1883
-    depends_on:
-      - mysql
-      - mqtt
-
-  react:
-    container_name: react3790
-    image: nginx:latest
-    volumes:
-      - ./react/build:/usr/share/nginx/html
-      - ./react/build/nginx.conf:/etc/nginx/conf.d/default.conf
-    ports:
-      - "3002:80"  # 将主机的 3002 端口映射到容器的 80 端口(nginx 默认端口)
-    depends_on:
-      - python
-
-volumes:
-  db-data:
-```
-
-其中nginx.conf内容为
-
-```
-server {
-    listen       80;
-    server_name  localhost;
-
-    location / {
-        root   /usr/share/nginx/html;
-        index  index.html index.htm;
-        try_files $uri /index.html;
-    }
-
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
-}
-```
-
-
 
