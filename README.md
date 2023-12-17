@@ -231,18 +231,25 @@ gantt
 ```
 
 ```shell
-docker-compose down
+
 docker volume rm iot_db-data
 docker-compose up -d
+
+# 重新生成
+docker-compose down
+docker-compose up -d --build
+
+
+
+
+docker save -o E:\IoT iot-java
+
+sudo lsof -i :3002
 ```
 
 
 
-
-
-注意如果报错说不存在iot，需要去docker里面手动建表
-
-mysql -u root -p然后手动操作
+接口问题
 
 ```
 net stop WinNAT
@@ -254,30 +261,91 @@ net start WinNAT
 
 
 
+我有一个服务器150.158.11.134，我通过docker部署了如下程序，为什么我不能通过150.158.11.134:3002访问网页？
 
-
-
-
-# nginx有问题
-
-http://localhost:3002/Device
-
-当我刷新后显示
-
-404 Not Found
-
-------
-
-nginx/1.25.3
-
-我没有写nginx的配置文件，是否需要写一个nginx的配置文件来避免这个问题？已经知道我是windows系统
-
-我的docker-compose.yml为
+已经知道我有docker-compose.yml内容如下,我用docker-compose up -d生成并运行了容器
 
 ```
+version: '3'
+services:
+  mysql:
+    container_name: mysql3790
+    image: mysql:latest
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: bsbs
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db-data:/var/lib/mysql
+
+  mqtt:
+    container_name: mqtt3790
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+  python:
+    container_name: python3790
+    build:
+      context: ./backend
+    ports:
+      - "3790:3790"
+    environment:
+      - DB_HOST=mysql3790
+      - MQTT_HOST=mqtt3790
+    depends_on:
+      - mysql
+      - mqtt
+
+  java:
+    container_name: java3790
+    build:
+      context: ./client
+    ports:
+      - "8080:8080"
+    environment:
+      - MQTT_HOST=tcp://mqtt3790:1883
+    depends_on:
+      - mysql
+      - mqtt
+
+  react:
+    container_name: react3790
+    image: nginx:latest
+    volumes:
+      - ./react/build:/usr/share/nginx/html
+      - ./react/build/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "3002:80"  # 将主机的 3002 端口映射到容器的 80 端口(nginx 默认端口)
+    depends_on:
+      - python
+
+volumes:
+  db-data:
 ```
 
+其中nginx.conf内容为
 
+```
+server {
+    listen       80;
+    server_name  localhost;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        try_files $uri /index.html;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+```
 
 
 
