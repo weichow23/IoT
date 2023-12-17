@@ -1,130 +1,53 @@
 # IoT 物联网设备管理平台
 
-http://150.158.11.134:3002/ 可以直接进行访问！
+### Demo
+
+
 
 <img src="report/demo.png" style="zoom:60%;" />
 
-## 前端
+
+
+http://150.158.11.134:3002/ 可以直接进行访问（**推荐直接访问**），密码如下所示，具体支持的操作详见**用户手册**
 
 ```shell
-nvm install 19
-nvm use 19
-```
-
-然后用yarn来运行前端
-
-```shell
-# frontend
-rm -rf node_modules
-rm yarn.lock
-yarn install
-# 第一次之后直接进入react目录运行就行
-yarn start
-```
-
-如果报错可能需要运行
-
-```shell
-npm install react-leaflet leaflet --legacy-peer-deps
-
-npm update --save-dev eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-promise
-```
-
-## 后端
-
-```shell
-# backend
-pip install -r requirements.txt
-# 如果报错缺乏14安装工具， python -m pip install --upgrade pip
-```
-
-[解决14构建工具错误](https://blog.csdn.net/u012637358/article/details/123214825)
-
-使用`mysql workbench`打开`init.sql`文件，执行建表
-
-```
-账号 bs
-密码  bsbs
-root bsbs
-```
-
-用pycharm打卡整个工程
-
-+ ==配置好运行环境运行`backendServer.py`，运行在`localhost:3790`==
-
-```shell
-netstat -ano | findstr :3306
-taskkill /F /PID 5748
-# 运行mqttServer.py之前要先运行下列语句打开服务(Eclipse Mosquitto是一个流行的开源MQTT服务器软件)
-mosquitto
-```
-
-+ 再开启一个终端，运行`mqttServer.py`，准备监听client信息
-
-#### 3. Client虚拟信息发送
-
-由老师提供，几乎没有进行更改
-
-```shell
-# 首先要运行后端程序
-mvn clean package
-# 同时复制一份iot道target
-cd target
-java -jar iotclient-1.0.0.jar
-```
-
-
-
-此时就可以在本机前端进行一系列操作了，详见**用户手册**
-
-```
 普通用户密码都是zhouwei
 root用户密码是root
 ```
 
+**或者**可以使用我提供的docker(它由`docker-compose up -d`生成后打包)
 
+```shell
+# 把docker_image.zip解压后的文件夹下的镜像都load
+docker load < mysql_latest.tar
+docker load < eclipse_mosquitto_latest.tar
+docker load < iot_python.tar
+docker load < iot_java.tar
+docker load < nginx_latest.tar
+# 解压IoT后在IoT目录下执行
+docker-compose up -d
+```
 
+### 文档目录
 
+```shell
+├── IoT
+│   └── backend
+│       ├── flask_server #头文件
+│       ├── iot_backend  #前端的后端
+│       ├── mqtt_backend  #客户端的后端
+│       └── ...
+│   ├── client  # 老师提供的客户端，主要的修改见报告，不再赘述
+│       └── ...
+│   ├── mqtt
+│       └── mosquitto.conf
+│   └── react
+│       ├── build #yarn build生成的静态文件
+│       ├── src   #该目录下为主要的前端代码
+│       	└── ...
+```
 
-
-
-## TODO
-
-把readme整理下，报告重写
-
-最后录一个视频
-
-
-
-目前本地的2G的docker能够正常运行(打包加上去)，服务器也可以正常用
-
-
-
-🙅‍2024年1月5日前提交： 
-
-1、程序代码和实验报告。 
-
-2、制作一个docker容器
-
-3、录制一个功能演示的操作视频
-
-4、提交的文档包括： 
-
-（2）里面的文档
-
-（4）源代码文件（包括sql） 
-
-打包上传学在浙大
-
-
-
-### 文档梗概
-
-
-
-**开发文档和环境配置**：  主要记录了我的一些开发过程，以及有详细的环境配置教程
-
-
+### 开发历程
 
 #### 模式设计
 
@@ -234,23 +157,5 @@ gantt
     用户手册编写和细化 :done, 2023-12-01, 2023-12-10
     最后的测试、问题修复、用户手册完善 :done, 2023-12-11, 2023-12-20
 
-```
-
-```shell
-docker volume rm iot_db-data
-docker-compose up -d
-# 重新生成
-docker-compose down
-rmi 和 rm -f对应的容器和镜像
-docker-compose up -d --build
-
-docker save -o E:\IoT iot-java
-```
-
-3002接口问题
-
-```shell
-net stop WinNAT
-net start WinNAT
 ```
 
