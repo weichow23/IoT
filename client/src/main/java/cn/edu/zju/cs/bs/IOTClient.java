@@ -11,14 +11,22 @@ public class IOTClient {
         String topic = "testapp";
         String clientPrefix = "device";
 
+
         try {
             Properties properties = new Properties();
             FileInputStream in = new FileInputStream("iot.properties");
+
+
             properties.load(in);
             devices = Integer.parseInt(properties.getProperty("devices"));
             mqttServer = properties.getProperty("server");
             topic = properties.getProperty("topic");
             clientPrefix = properties.getProperty("prefix");
+
+            String EnvironmentMQTT = System.getenv("MQTT_HOST");
+            if (EnvironmentMQTT != null) {
+                mqttServer = EnvironmentMQTT;
+            }
 
             Vector<WorkerThread> threadVector = new Vector<WorkerThread>();
             for (int i = 0; i < devices; i++) {

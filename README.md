@@ -230,9 +230,15 @@ gantt
 
 ```
 
-
-
+```shell
+docker-compose down
+docker volume rm iot_db-data
 docker-compose up -d
+```
+
+
+
+
 
 注意如果报错说不存在iot，需要去docker里面手动建表
 
@@ -252,11 +258,26 @@ net start WinNAT
 
 
 
-# 数据库有问题
+# nginx有问题
+
+http://localhost:3002/Device
+
+当我刷新后显示
+
+404 Not Found
+
+------
+
+nginx/1.25.3
+
+我没有写nginx的配置文件，是否需要写一个nginx的配置文件来避免这个问题？已经知道我是windows系统
+
+我的docker-compose.yml为
+
+```
+```
 
 
 
 
-
-# MQTT也有问题
 
